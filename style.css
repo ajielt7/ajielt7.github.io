@@ -1,0 +1,41 @@
+.respon {
+  height: 300px;
+  z-index: -1;
+}
+
+.jumbotron {
+  margin-top: 100px;
+}
+
+.pKiri {
+  opacity: 0;
+  transform: translate(-50px, 0) rotate(15deg);
+  transition: 1s;
+}
+
+.pKanan {
+  opacity: 0;
+  transform: translate(-50px, 0) rotate(15deg);
+  transition: 1s;
+}
+
+.footer.pMuncul,
+.jumbotron.pMuncul,
+.pKiri.pMuncul,
+.pKanan.pMuncul {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.footer,
+.jumbotron {
+  opacity: 0;
+  transform: translate(-50px, 0);
+  transition: 2s;
+}
+
+.footer {
+  opacity: 0;
+  transform: translate(0px, 0);
+  transition: 2s;
+}
