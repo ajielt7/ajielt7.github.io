@@ -26,7 +26,7 @@ $(window).on("load", function () {
 
 $(window).scroll(function () {
   var wScroll = $(this).scrollTop();
-  if (wScroll > $(".service").offset().top - 100) {
+  if (wScroll > $(".service").offset().top - 300) {
     $(".service .card").each(function (i) {
       $(".footer").addClass("pMuncul");
     });
