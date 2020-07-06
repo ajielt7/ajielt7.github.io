@@ -38,3 +38,30 @@
   transform: translate(0px, 0);
   transition: 2s;
 }
+
+.navbar {
+  background-color: darkgreen;
+}
+
+.card {
+  background-color: darkgreen;
+  color: white;
+}
+
+.footer {
+  background-color: darkgreen;
+  color: white;
+}
+
+.embed-responsive {
+  background-color: darkgreen;
+}
+
+hr {
+  background-color: white;
+}
+
+i {
+  text-decoration: none;
+  color: white;
+}
