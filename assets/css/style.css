@@ -1,18 +1,6 @@
 body {
     font-family: 'Poppins', sans-serif;
 }
-
-/* .bg {
-    background-image: url("/img/background/bgfirsh.jpg");
-}
-
-.bgc {
-    width: 100%;
-    height: 100vh;
-    background-color: #fff;
-    opacity: 70%;
-} */
-
 .basic {
     margin: 150px 0 100px 0;
 }
@@ -33,4 +21,14 @@ nav .collapse ul li a {
 
 nav .collapse ul li a:hover {
     border-bottom: 3px solid rgb(243, 241, 241);
+}
+
+.bg .container .basic img {
+    width: 80%;
+}
+
+@media (max-width: 991.98px) {
+    .bg .container .basic img {
+        margin-top: 40px;
+    }
 }
