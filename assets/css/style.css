@@ -32,3 +32,9 @@ nav .collapse ul li a:hover {
         margin-top: 40px;
     }
 }
+
+@media (max-width: 767.98px) {
+    section .card .row .mb-5 img {
+        width: 90%;
+    }
+}
