@@ -27,6 +27,17 @@ nav .collapse ul li a:hover {
     width: 80%;
 }
 
+.row .hidden {
+    height: 0;
+    overflow: hidden;
+    transition: top 2s ease;
+}
+
+.row:hover .hidden {
+    height: 100%;
+    transition: top 2s ease;
+}
+
 @media (max-width: 991.98px) {
     .bg .container .basic img {
         margin-top: 40px;
