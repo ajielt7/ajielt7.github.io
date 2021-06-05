@@ -52,6 +52,13 @@
 </head>
 
 <body>
+    <!-- Messenger Plugin Obrolan Code -->
+    <div id="fb-root"></div>
+
+    <!-- Your Plugin Obrolan code -->
+    <div id="fb-customer-chat" class="fb-customerchat">
+    </div>
+
     <nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
@@ -332,10 +339,10 @@
             </div>
         </div>
     </section>
-    <section id="footer" class="bg-info py-5">
+    <section id="footer" class=" text-white py-5">
         <div class="container">
             <div class="row mb-5">
-                <div class="col-lg-4 mb-4">
+                <div class="col-lg-3 mb-4">
                     <h1>Ajielt7<sup>&copy;</sup></h1>
                     <br>
                     <p>Kp Sukahaji Rt01/07 Desa Cimekar
@@ -344,12 +351,12 @@
                     </p>
                     <br>
                     <br>
-                    <strong>Whatsapp :</strong>081313117488
+                    <strong>Telp : </strong>081313117488
                     <br>
                     <strong>Email :</strong>
                     ajielt7@gmail.com
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <h2>Layanan</h2>
                     <br>
                     <ul>
@@ -359,7 +366,7 @@
                         <li>Paket premium</li>
                     </ul>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <h2>Fiture</h2>
                     <br>
                     <ul>
@@ -370,10 +377,30 @@
                         <li>Dilayani secara INDIVIDUAL</li>
                     </ul>
                 </div>
+                <div class="col-lg-3">
+                    <h6>Cari kami dipeta :</h6>
+                    <div class="ratio ratio-16x9 shadow">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22404.32367612427!2d107.72784383889311!3d-6.942796434860563!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x250cb982549424a9!2sAjielt7.WEBSITE!5e0!3m2!1sid!2sid!4v1622542450342!5m2!1sid!2sid"
+                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                    <br>
+                    <h6>Media kami:</h6>
+                    <div class="d-inline">
+                        <a href="https://www.facebook.com/ajielt7.id" class="text-decoration-none shadow">
+                            <i class="fab fa-facebook-square"></i>
+                        </a>
+                        <a href="https://api.whatsapp.com/send?phone=6281313117488&text=JASA%20PEMBUATAN%20WEBSITE"
+                            class="text-decoration-none shadow">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+
+                    </div>
+                </div>
             </div>
             <hr>
             <div class="text-center mt-5">
-                <small>copyright &copy; by Ajielt7</small>
+                <small>copyright &copy; 2021 by Ajielt7, All Rights Reserved.</small>
             </div>
         </div>
     </section>
@@ -382,6 +409,26 @@
         integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
         crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/67c3281092.js" crossorigin="anonymous"></script>
+
+    <script>
+        var chatbox = document.getElementById('fb-customer-chat');
+        chatbox.setAttribute("page_id", "106279208337749");
+        chatbox.setAttribute("attribution", "biz_inbox");
+        window.fbAsyncInit = function () {
+            FB.init({
+                xfbml: true,
+                version: 'v10.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/id_ID/sdk/xfbml.customerchat.js';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
 </body>
 
 </html>
