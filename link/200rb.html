@@ -53,6 +53,12 @@
 </head>
 
 <body>
+    <!-- Messenger Plugin Obrolan Code -->
+    <div id="fb-root"></div>
+
+    <!-- Your Plugin Obrolan code -->
+    <div id="fb-customer-chat" class="fb-customerchat">
+    </div>
     <nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
@@ -332,7 +338,7 @@
             </div>
         </div>
     </section>
-    <section id="footer" class="bg-info py-5">
+    <section id="footer" class="succ text-white py-5">
         <div class="container">
             <div class="row mb-5">
                 <div class="col-lg-4 mb-4">
@@ -382,6 +388,25 @@
         integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
         crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/67c3281092.js" crossorigin="anonymous"></script>
+    <script>
+        var chatbox = document.getElementById('fb-customer-chat');
+        chatbox.setAttribute("page_id", "106279208337749");
+        chatbox.setAttribute("attribution", "biz_inbox");
+        window.fbAsyncInit = function () {
+            FB.init({
+                xfbml: true,
+                version: 'v10.0'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = 'https://connect.facebook.net/id_ID/sdk/xfbml.customerchat.js';
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
 </body>
 
 </html>
