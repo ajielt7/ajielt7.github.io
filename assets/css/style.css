@@ -1,68 +1,117 @@
+/* -------------------------|-------------------------- */
+/*                       GLOBAL                         */
+/* -------------------------|-------------------------- */
 body {
-    font-family: 'Poppins', sans-serif;
-}
-.basic {
-    margin: 150px 0 100px 0;
+    margin: 0;
+    padding: 0;
+    font-family: 'Rubik', sans-serif;
 }
 
-.container {
-    position: relative;
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Otomanopee One', sans-serif;
+}
+
+.bg-gh {
+    background: #4aa96c;
+    background: linear-gradient(90deg, rgba(74,169,108,1) 0%,
+        rgba(111,196,126,1) 50%,
+        rgba(159,230,160,1) 100%);
+}
+
+.bg-gph {
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(255,255,255,1) 0%,
+        rgba(208,244,214,1) 50%,
+        rgba(177,228,177,1) 100%);
+}
+
+.bg-o {
+    background: #FFC074;
+}
+
+.bl {
+    border-left: rgb(74,169,108) 1px solid;
+}
+
+.text-ht {
+    color: rgb(74,169,108);
+}
+
+.text-hs {
+    color: rgb(111,196,126);
+}
+
+.text-o {
+    color: #FFC074;
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 4px #fff;
+}
+
+.text-shadow-hitam {
+    text-shadow: 2px 2px 4px rgb(66, 65, 65);
 }
 
 /* -------------------------|-------------------------- */
-/*                   untuk MUHAMMAD                     */
+/*                       NAVBAR                         */
 /* -------------------------|-------------------------- */
-nav {
-    background: #9ff89c;
-    border-bottom: 5px solid rgb(243, 241, 241);
+#navbar a {
+    margin: 20px 0;
+    padding: 0 20px;
 }
 
-nav .collapse ul li a {
-    margin-left: 50px;
-    border-bottom: 3px solid transparent;
+#navbar .text-ht {
+    color: rgb(74,169,108);
 }
 
-nav .collapse ul li a:hover {
-    border-bottom: 3px solid rgb(243, 241, 241);
+#navbar .navi:hover a {
+    color: white;
+    /* color: rgb(74,169,108); */
+}
+#navbar .navi:hover {
+    background: #FFC074;
+    box-shadow: 2px 2px 4px rgb(182, 178, 178);
 }
 
-.bg .container .basic img {
-    width: 80%;
+/* -------------------------|-------------------------- */
+/*                       HEADER                         */
+/* -------------------------|-------------------------- */
+#header h1 {
+    color: rgb(1, 147, 124);
 }
 
-.row .hidden {
-    height: 0;
-    overflow: hidden;
-    transition: top 2s ease;
+/* -------------------------|-------------------------- */
+/*                        FITUR                         */
+/* -------------------------|-------------------------- */
+#fitur p {
+    color: white;
 }
 
-.row:hover .hidden {
-    height: 100%;
-    transition: top 2s ease;
+#fitur i {
+    margin-bottom: 10px;
 }
 
-.succ {
-    background: #0f750c;
+/* -------------------------|-------------------------- */
+/*                       FOOTER                         */
+/* -------------------------|-------------------------- */
+
+#footer .bgf .bgft{
+    color: rgb(237, 243, 239);
+    font-size: 35px;
+}
+#footer .bgf .bgfb{
+    color: rgb(237, 243, 239);
+    font-size: 35px;
 }
 
-#footer p {
-    font-size: small;
+#footer .bgf:hover {
+    background-color: #ffffff;
+    box-shadow: 2px 2px 4px rgb(148, 144, 144);
 }
-
-#footer .col-lg-3 .d-inline a {
-    margin: 5px;
-    padding: 8px 10px;
-    background: #9ff89c;
+#footer .bgf:hover .bgft{
+    color: rgb(74,169,108);;
 }
-
-@media (max-width: 991.98px) {
-    .bg .container .basic img {
-        margin-top: 40px;
-    }
-}
-
-@media (max-width: 767.98px) {
-    section .card .row .mb-5 img {
-        width: 90%;
-    }
+#footer .bgf:hover .bgfb{
+    color: #0A7CFF;
 }
