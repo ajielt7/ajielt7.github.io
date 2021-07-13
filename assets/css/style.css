@@ -110,12 +110,12 @@ h1, h2, h3, h4, h5, h6 {
 /* -------------------------|-------------------------- */
 /*                        PAKET                         */
 /* -------------------------|-------------------------- */
-#paket .hover-o {
+#paket .card .hover-o {
     border: solid 2px transparent;
     color: white;
 }
 
-#paket .hover-o:hover {
+#paket .card .hover-o:hover {
     border: solid 2px #FFC074;
     background: white;
     color: #FFC074;
