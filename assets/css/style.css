@@ -11,6 +11,10 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Otomanopee One', sans-serif;
 }
 
+.bg-ht {
+    background: #4aa96c;
+}
+
 .bg-gh {
     background: #4aa96c;
     background: linear-gradient(90deg, rgba(74,169,108,1) 0%,
@@ -53,6 +57,17 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: 2px 2px 4px rgb(66, 65, 65);
 }
 
+.hover-h {
+    border: solid 2px transparent;
+    color: white;
+}
+
+.hover-h:hover {
+    border: solid 2px #4aa96c;;
+    background: white;
+    color: #4aa96c;;
+}
+
 /* -------------------------|-------------------------- */
 /*                       NAVBAR                         */
 /* -------------------------|-------------------------- */
@@ -90,6 +105,20 @@ h1, h2, h3, h4, h5, h6 {
 
 #fitur i {
     margin-bottom: 10px;
+}
+
+/* -------------------------|-------------------------- */
+/*                        PAKET                         */
+/* -------------------------|-------------------------- */
+#paket .hover-o {
+    border: solid 2px transparent;
+    color: white;
+}
+
+#paket .hover-o:hover {
+    border: solid 2px #FFC074;
+    background: white;
+    color: #FFC074;
 }
 
 /* -------------------------|-------------------------- */
