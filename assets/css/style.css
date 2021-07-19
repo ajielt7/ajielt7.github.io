@@ -19,7 +19,7 @@ h1, h2, h3, h4, h5, h6 {
     background: #4aa96c;
     background: linear-gradient(90deg, rgba(74,169,108,1) 0%,
         rgba(111,196,126,1) 50%,
-        rgba(159,230,160,1) 100%);
+        #9fe6a0 100%);
 }
 
 .bg-gph {
@@ -66,6 +66,21 @@ h1, h2, h3, h4, h5, h6 {
     border: solid 2px #4aa96c;;
     background: white;
     color: #4aa96c;;
+}
+
+.shad .shadow-hover {
+    border: solid 2px transparent;
+}
+
+.shad {
+    box-shadow: 0 .125rem .25rem rgb(49, 45, 45);
+}
+
+.shad .shadow-hover:hover {
+    border: solid 2px white;
+}
+.shad:hover {
+    box-shadow: 0 .5rem 1rem rgb(49, 45, 45);
 }
 
 /* -------------------------|-------------------------- */
