@@ -39,7 +39,7 @@ flowchart LR
 
 1. Pelanggan memilih produk, memasukkan kontak/alamat tertulis, lalu mencari kelurahan/kecamatan/kota tujuan.
 2. Frontend meminta hasil pencarian tujuan dari Worker. Pada cache miss Worker menghubungi RajaOngkir memakai secret API key di Cloudflare; hasilnya disimpan sebagai JSON di Workers Cache agar pencarian serupa berikutnya dapat memakai cache.
-3. Setelah lokasi dipilih dan keranjang berisi produk, frontend meminta estimasi ongkir otomatis. Worker menggunakan ID asal Cimekar yang dicatat di `data/rajaongkir-reference.json`, menghitung berat prototipe 500 gram per item, dan meminta tarif beberapa ekspedisi sekaligus. Frontend mengurutkan kelompok kurir berdasarkan tarif termurah. Dropdown kurir termurah dibuka lebih dulu; ketika pelanggan membuka kurir lain, ongkir layanan termurah kurir itu dipilih, lalu daftar layanannya diurutkan dari harga terendah. Layanan kargo diberi tanda jika dapat dikenali dari respons API. Tarif tetap diminta langsung dari RajaOngkir.
+3. Setelah lokasi dipilih dan keranjang berisi produk, frontend meminta estimasi ongkir otomatis. Worker menggunakan ID asal Cimekar yang dicatat di `data/rajaongkir-reference.json`, menghitung berat prototipe 500 gram per item, dan meminta tarif beberapa ekspedisi sekaligus. Frontend mengurutkan kelompok kurir berdasarkan tarif termurah. Tampilan awal berisi kurir termurah, maksimal dua alternatif reguler, dan satu kurir dengan layanan kargo jika tersedia; kurir lain ada di bagian bagian kurir lainnya. Kelompok termurah terbuka lebih dulu. Saat pelanggan membuka kelompok kurir lain, layanan termurah kurir itu dipilih dan layanannya diurutkan dari harga terendah. Layanan kargo diberi tanda jika dapat dikenali dari respons API. Tarif tetap diminta langsung dari RajaOngkir.
 4. Backend menetapkan order ID dan kode referensi pembayaran unik, menyimpan pesanan berstatus menunggu pembayaran, lalu mengembalikan checkout dan instruksi transfer.
 5. Pelanggan mencantumkan kode di deskripsi transfer dan mengunggah screenshot. Worker memvalidasi file, menyimpan file di Drive, dan mencatat referensi file/status bukti pada Sheet.
 6. Admin membuka dashboard yang dilindungi akses, membandingkan kode, nilai, bukti, dan mutasi rekening secara manual.
@@ -63,4 +63,3 @@ flowchart LR
 - Bobot aktual tiap produk dan paket/akurasi tarif RajaOngkir sebelum transaksi nyata.
 - Penyedia WhatsApp Business/API dan biaya pesan.
 - Format data produk khusus nomor rumah akrilik dan detail tarif kurir.
-
