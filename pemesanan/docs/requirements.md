@@ -21,7 +21,7 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 | FR-04 | Perhitungan ongkir ojol. | Rumus bisnis: 4 km pertama Rp10.000, setiap km setelahnya Rp2.500, jarak pecahan dibulatkan ke atas. Kalkulasi UI sementara dinonaktifkan bersama fitur titik lokasi. |
 | FR-05 | Sistem memperoleh ongkir ekspedisi. | Worker meminta tarif beberapa kode kurir dalam satu permintaan ke RajaOngkir API V2. Hanya layanan yang tersedia untuk rute dan akun yang tampil. Bobot prototipe 500 gram per item; perlu diganti bobot aktual sebelum dipakai untuk transaksi nyata. |
 | FR-06 | Checkout menampilkan kode referensi pembayaran otomatis. | Kode dibuat unik oleh backend, ditampilkan dengan instruksi yang jelas, dan dikaitkan dengan pesanan. Pelanggan mencantumkan kode pada deskripsi transfer. |
-| FR-07 | Pelanggan dapat mengunggah screenshot bukti transfer. | File disimpan di bucket Cloudflare R2 privat; Sheet mencatat object key dan waktu unggah. JPG/PNG/WebP, maksimal 5 MB. |
+| FR-07 | Pelanggan dapat mengunggah screenshot bukti transfer. | File disimpan di folder Google Drive privat `Bukti Pembayaran`; Sheet mencatat ID file dan waktu unggah. JPG/PNG/WebP, maksimal 5 MB. |
 | FR-08 | Admin memeriksa dan menyetujui pembayaran manual. | Dashboard menampilkan detail pesanan, kode pembayaran, bukti, dan informasi yang diperlukan untuk pencocokan dengan mutasi bank. Admin mengubah status melalui tombol ACC. |
 | FR-09 | ACC memicu pemberitahuan WhatsApp otomatis. | Sistem mengirim pemberitahuan setelah ACC berhasil tersimpan. Penggunaan WhatsApp Business Platform/API, template, kredensial, dan biaya harus dipastikan sebelum fitur ini dirilis. |
 | FR-10 | Sistem menyimpan rekaman pesanan. | Data pesanan, koordinat, kode pembayaran, ongkir, status, serta referensi bukti dicatat di Google Sheets melalui backend. |
@@ -32,7 +32,7 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 - Frontend dapat di-host sebagai situs statis GitHub Pages.
 - Validasi dan logika ongkir penting dilakukan di backend, bukan hanya browser.
 - Rahasia API disimpan di Cloudflare Worker secrets, tidak di repository publik.
-- Akses dashboard admin, Google Sheet, dan bukti pada R2 dibatasi.
+- Akses dashboard admin, Google Sheet, dan folder bukti Google Drive dibatasi.
 - Halaman menjelaskan penggunaan koordinat alamat dan bukti transfer kepada pelanggan.
 - Aset dari Unsplash dan Font Awesome dapat gagal dimuat jika layanan eksternal tidak tersedia; konten utama dan fungsi checkout harus tetap dapat digunakan.
 - Sistem memberi pesan kesalahan yang jelas bila peta, layanan rute, upload, atau penyimpanan sedang gagal.
@@ -49,3 +49,4 @@ Akun pelanggan, payment gateway, pengecekan mutasi bank otomatis, inventori otom
 - Pada jarak 40 km atau lebih, hanya kurir ekspedisi tersedia.
 - Ongkir ekspedisi menggunakan RajaOngkir; tarif ojol memakai formula per km di FR-04.
 - Pembayaran dilakukan lewat transfer bank dan diverifikasi admin secara manual terhadap mutasi.
+
