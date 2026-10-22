@@ -72,8 +72,8 @@ export default {
         const originResult = await rajaOngkir(`/destination/domestic-destination?${originQuery}`, {}, env.RAJAONGKIR_API_KEY);
         const normalize = (value) => String(value || '').trim().toLocaleLowerCase('id-ID');
         const originLocation = (originResult.data || []).find((location) =>
-          normalize(location.subdistrict) === 'cimekar' &&
-          [location.district, location.city, location.label].some((value) => normalize(value).includes('cileunyi'))
+          normalize(location.label).includes('cimekar') &&
+          normalize(location.label).includes('cileunyi')
         );
         if (!originLocation) return json({ error: 'Lokasi asal Cimekar, Cileunyi belum ditemukan di RajaOngkir.' }, 502, origin);
         const form = new URLSearchParams({
