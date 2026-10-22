@@ -5,7 +5,7 @@ Urutan ini memprioritaskan alur pesanan yang dapat diuji dari ujung ke ujung. Ta
 ## Tahap 0 — Sepakati kebutuhan dan keputusan teknis
 
 - Finalisasi opsi/atribut nomor rumah akrilik, rekening dan instruksi transfer.
-- Pilih jalur Cloudflare ke Google Sheets dan Cloudflare R2.
+- Pilih jalur Cloudflare ke Google Sheets dan Google Drive.
 - Verifikasi akses dan batas API RajaOngkir, peta/routing, serta WhatsApp.
 - **Selesai jika:** dokumen `requirements.md`, `architecture.md`, dan `state.md` tidak memiliki keputusan penghambat untuk MVP.
 
@@ -28,10 +28,9 @@ Urutan ini memprioritaskan alur pesanan yang dapat diuji dari ujung ke ujung. Ta
 ## Tahap 3 — Transfer manual dan bukti pembayaran
 
 - Tampilkan rekening dan instruksi untuk mencantumkan kode pada deskripsi transfer.
-- [x] Siapkan form upload screenshot JPG/PNG/WebP maksimal 5 MB dan endpoint penyimpanan privat R2.
-- [x] Siapkan Apps Script untuk mengaitkan object key dan waktu upload ke pesanan di Sheet.
-- [ ] Aktifkan R2, buat bucket privat `ruma-bukti-pembayaran`, dan ikat ke Worker sebagai `PAYMENT_PROOFS`.
-- [ ] Terbitkan kode Worker dan deployment Apps Script versi terbaru.
+- [x] Siapkan form upload screenshot JPG/PNG/WebP maksimal 5 MB dan endpoint penyimpanan Google Drive.
+- [x] Siapkan Apps Script untuk membuat folder privat `Bukti Pembayaran`, menyimpan gambar, dan mengaitkan ID file/waktu upload ke pesanan di Sheet.
+- [ ] Perbarui kode Apps Script, beri izin Drive, dan terbitkan deployment Web App versi terbaru.
 - **Selesai jika:** admin dapat menemukan bukti dari kode pesanan tanpa akses publik ke file.
 
 ## Tahap 4 — Dashboard admin dan ACC
@@ -55,3 +54,4 @@ Frontend ditempatkan di subfolder `pemesanan/` pada repository Pages `ajielt7/aj
 ## Prioritas MVP
 
 MVP adalah satu usaha dan satu tipe produk, tanpa akun pelanggan, tanpa payment gateway, serta verifikasi transfer oleh admin. Integrasi WhatsApp otomatis boleh masuk tahap rilis setelah akses/biaya API dipastikan; kebutuhan akhirnya tetap otomatis setelah ACC.
+
