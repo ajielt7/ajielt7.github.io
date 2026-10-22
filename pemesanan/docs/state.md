@@ -5,9 +5,9 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Status saat ini
 
 - **Fase:** prototipe frontend (Tahap 1 roadmap).
-- **Kode aplikasi:** `index.html`, `styles.css`, dan `script.js` berisi katalog 12 produk, keranjang/checkout samping, data kontak dan alamat, serta pratinjau lokal. Titik lokasi peta dan ongkir berbasis jarak sementara dihapus; metode pengiriman dan ongkir dikonfirmasi manual. Hero, pengantar, cara pesan, dan footer dihapus agar halaman fokus pada pemesanan. Bagian detail tulisan/desain produk juga ditunda. Harga, ukuran, dan variasi katalog hanya contoh prototipe.
+- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, dan pratinjau lokal. Worker `pemesanan-api` telah dibuat dengan secret key RajaOngkir di Cloudflare. Ongkir JNE/J&T dikodekan dengan bobot contoh 500 gram per item; request live belum dapat diverifikasi di sesi ini. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
-- **Tahap berikutnya:** verifikasi halaman di subpath Pages, tetapkan koordinat asal usaha, lalu putuskan integrasi Google/API sebelum membangun backend pada Tahap 2.
+- **Tahap berikutnya:** buka halaman checkout dari browser dan pastikan pencarian tujuan serta ongkir JNE/J&T merespons; lalu ganti bobot contoh dengan bobot produk/kemasan aktual.
 
 ## Keputusan yang sudah disepakati
 
@@ -16,11 +16,13 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 - Hosting frontend: GitHub Pages. Backend: Cloudflare Worker. Data pesanan: Google Sheets.
 - Aset frontend sementara: gambar dari Unsplash dan ikon Font Awesome melalui CDN.
 - Merek “ruma.” dan foto hero saat ini hanya placeholder visual.
-- Peta Leaflet memakai tile OpenStreetMap; pengguna dapat memilih pin atau meminta lokasi browser.
-- `script.js` memanggil OSRM demo dari browser untuk estimasi jarak, menentukan opsi ojol/ekspedisi, dan menghitung ongkir ojol sesuai aturan. Titik asal di kode masih koordinat perkiraan Cimekar.
+- Pemilihan titik lokasi peta sementara dihapus dari checkout; pelanggan memilih tujuan pengiriman melalui hasil pencarian RajaOngkir.
+- `script.js` meminta Worker mencari tujuan dan menghitung tarif ekspedisi; API key tidak ada di frontend.
+- Worker source ada di `worker/index.js`; nama Worker Cloudflare `pemesanan-api`, URL `https://pemesanan-api.ajielt7.workers.dev`.
+- Worker memakai API RajaOngkir V2, kurir `jne:jnt`, dan bobot prototipe 500 gram per item. Lokasi asal dicari sebagai Cimekar, Cileunyi pada saat permintaan ongkir; respons live dan kecocokan lokasi belum diverifikasi.
 - Formulir memvalidasi input dan membuka dialog pratinjau lokal; belum mengirim atau menyimpan pesanan.
 - Target Pages: repository publik `ajielt7/ajielt7.github.io`, default branch `master`, sudah memuat situs utama. Aplikasi ditempatkan di subfolder `pemesanan/` untuk mempertahankan halaman utama.
-- Peta/UI pin: Leaflet + OpenStreetMap. Routing jalan untuk prototipe: OSRM.
+- Peta/UI pin dan routing ojol: ditunda sementara; Leaflet/OSRM tidak dimuat saat ini.
 - Titik asal kirim: Cimekar, Cileunyi.
 - Jarak <40 km: pelanggan boleh memilih ojol atau ekspedisi. Jarak >=40 km: hanya ekspedisi.
 - Ekspedisi seperti JNE/J&T dihitung memakai RajaOngkir.
@@ -36,7 +38,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 1. **Integrasi Google:** Apps Script sebagai penghubung atau Cloudflare Worker memakai Google API langsung.
 2. **Akses admin:** mekanisme autentikasi dan bagaimana kredensial admin dikelola.
 3. **Layanan peta/rute:** tile provider OSM dan endpoint routing yang ketentuannya sesuai. OSRM publik adalah prototipe tanpa jaminan ketersediaan.
-4. **RajaOngkir:** paket/API, syarat akun, cakupan kurir, dan bentuk endpoint terbaru.
+4. **RajaOngkir:** pastikan ID asal pencarian Cimekar tepat, cakupan JNE/J&T dari jenis akun, dan uji harga terhadap alamat nyata.
 5. **WhatsApp otomatis:** jenis akun/API, konfigurasi pesan, biaya, serta mekanisme retry/log.
 6. **Upload bukti:** batas ukuran/tipe, retensi, dan akses admin ke Drive.
 7. **Detail produk:** pilihan bahan/ukuran/warna/desain nomor akrilik dan harga.
