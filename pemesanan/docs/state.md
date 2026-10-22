@@ -5,7 +5,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Status saat ini
 
 - **Fase:** prototipe frontend (Tahap 1 roadmap).
-- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, dan pratinjau lokal. Worker `pemesanan-api` telah dibuat dengan secret key RajaOngkir di Cloudflare. Ongkir JNE/J&T dikodekan dengan bobot contoh 500 gram per item; request live belum dapat diverifikasi di sesi ini. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
+- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, dan pratinjau lokal. Worker `pemesanan-api` memakai secret RajaOngkir di Cloudflare. Hasil pencarian tujuan disimpan sebagai respons JSON pada Workers Cache selama 30 hari; hasil kosong 5 menit. ID asal 5052 dicatat di `data/rajaongkir-reference.json`, sehingga pencarian asal tidak berulang untuk tiap hitung tarif. Perhitungan ongkir JNE/J&T tetap real-time dengan bobot contoh 500 gram per item. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
 - **Tahap berikutnya:** buka halaman checkout dari browser dan pastikan pencarian tujuan serta ongkir JNE/J&T merespons; lalu ganti bobot contoh dengan bobot produk/kemasan aktual.
 
@@ -19,7 +19,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 - Pemilihan titik lokasi peta sementara dihapus dari checkout; pelanggan memilih tujuan pengiriman melalui hasil pencarian RajaOngkir.
 - `script.js` meminta Worker mencari tujuan dan menghitung tarif ekspedisi; API key tidak ada di frontend.
 - Worker source ada di `worker/index.js`; nama Worker Cloudflare `pemesanan-api`, URL `https://pemesanan-api.ajielt7.workers.dev`.
-- Worker memakai API RajaOngkir V2, kurir `jne:jnt`, dan bobot prototipe 500 gram per item. Pencarian live mengembalikan lokasi asal `CIMEKAR, CILEUNYI, BANDUNG, JAWA BARAT, 40623` dengan ID 5052. Field `subdistrict`, `district`, dan `city` kosong pada hasil tersebut, sehingga Worker mencocokkan nama dari `label`.
+- Worker memakai API RajaOngkir V2, kurir `jne:jnt`, dan bobot prototipe 500 gram per item. Pencarian live mengembalikan lokasi asal `CIMEKAR, CILEUNYI, BANDUNG, JAWA BARAT, 40623` dengan ID 5052. Data wilayah dicache bertahap per kata pencarian; belum ada snapshot lengkap semua wilayah Indonesia.
 - Formulir memvalidasi input dan membuka dialog pratinjau lokal; belum mengirim atau menyimpan pesanan.
 - Target Pages: repository publik `ajielt7/ajielt7.github.io`, default branch `master`, sudah memuat situs utama. Aplikasi ditempatkan di subfolder `pemesanan/` untuk mempertahankan halaman utama.
 - Peta/UI pin dan routing ojol: ditunda sementara; Leaflet/OSRM tidak dimuat saat ini.
