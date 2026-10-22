@@ -9,13 +9,12 @@ Proyek percobaan untuk membangun sistem pemesanan barang fisik (awal: nomor ruma
 - **Backend/API:** Cloudflare Workers.
 - **Database pesanan:** Google Sheets.
 - **Bukti transfer:** Google Drive; Sheet menyimpan metadata dan referensi file.
-- **Peta:** Leaflet dengan data peta OpenStreetMap.
-- **Rute jalan untuk ongkir ojol:** OSRM untuk prototipe; kestabilan dan ketentuan penggunaan perlu dievaluasi sebelum pemakaian produksi.
+- **Peta/rute:** pemilihan titik lokasi dan perhitungan rute sementara dihapus dari prototipe. Dapat diaktifkan kembali setelah alur checkout dan layanan jarak diputuskan.
 
 ## Alur ringkas
 
-1. Pelanggan mengisi detail pesanan, alamat, dan titik rumah di peta.
-2. Sistem menghitung pilihan/ongkir pengiriman dan menampilkan checkout serta kode referensi pembayaran.
+1. Pelanggan memilih produk dan memasukkan kontak serta alamat tertulis.
+2. Metode dan ongkir pengiriman dikonfirmasi manual setelah alamat diperiksa.
 3. Pelanggan mentransfer ke rekening usaha, mencantumkan kode pada deskripsi transfer, lalu mengunggah screenshot bukti.
 4. Admin memeriksa bukti dan mutasi bank melalui dashboard, kemudian menyetujui pesanan secara manual.
 5. Setelah ACC, sistem mengirim WhatsApp otomatis. Integrasi WhatsApp Business Platform/API dan biayanya masih perlu dipastikan.
@@ -33,4 +32,5 @@ Rencana publikasi saat ini adalah menaruh aplikasi di folder `pemesanan/` pada r
 
 ## Status
 
-Prototipe frontend pemesanan sudah dibuat. Backend belum terhubung: pesanan tidak tersimpan, kode pembayaran belum dibuat, bukti belum diunggah, dan ongkir ekspedisi belum dihitung. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
+Prototipe frontend pemesanan sudah dibuat. Backend belum terhubung: pesanan tidak tersimpan, kode pembayaran belum dibuat, bukti belum diunggah, dan ongkir belum dihitung. Titik lokasi rumah sementara dihapus dari checkout. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
+
