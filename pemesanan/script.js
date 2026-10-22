@@ -89,7 +89,8 @@
     if (searchController) searchController.abort();
     searchController = new AbortController();
     try {
-      const response = await fetch(`${API_BASE}/api/destinations?search=${encodeURIComponent(search)}`, { signal: searchController.signal });
+      const cacheSearch = search.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID');
+      const response = await fetch(`${API_BASE}/api/destinations?search=${encodeURIComponent(cacheSearch)}`, { signal: searchController.signal });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Pencarian lokasi gagal.');
       results.replaceChildren();
