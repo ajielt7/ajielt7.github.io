@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,7 +23,7 @@
             <section class="order-section" id="pesan">
       <div class="order-heading">
         <div><span class="eyebrow"><span class="eyebrow-line"></span> MULAI PESANAN</span><h2>Ceritakan<br><em>rumahmu.</em></h2></div>
-        <p>Isi detail nomor rumah dan alamat tujuan. Ongkir ojol dihitung dari titik rumah pada peta.</p>
+        <p>Pilih produk dan masukkan kontak serta alamat tujuan. Metode dan ongkir pengiriman dikonfirmasi setelah alamat diperiksa.</p>
       </div>
 
       <form id="order-form" novalidate>
@@ -46,25 +45,7 @@
               <label class="field">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
             </div>
             <div class="checkout-divider"></div>
-            <div class="form-section-heading checkout-subheading"><span class="step-number">03</span><div><h3>Titik lokasi rumah</h3><p>Ketuk peta untuk menandai lokasi.</p></div></div>
-            <div class="map-panel">
-              <div class="map-topline"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> TITIK PENGIRIMAN</span><button type="button" class="map-locate" id="locate-button"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Lokasiku</button></div>
-              <div id="delivery-map" aria-label="Peta untuk memilih lokasi pengiriman"></div>
-              <div class="map-foot"><span id="location-label">Belum ada titik dipilih</span><span id="coordinate-label">Pilih titik pada peta</span></div>
-              <button type="button" class="route-button" id="route-button" disabled><i class="fa-solid fa-route" aria-hidden="true"></i> Hitung jarak pengiriman</button>
-              <p class="map-privacy"><i class="fa-solid fa-lock" aria-hidden="true"></i> Koordinat digunakan untuk menghitung ongkir dan menyiapkan pengiriman.</p>
-            </div>
-            <div class="delivery-result" id="delivery-result" hidden aria-live="polite">
-              <div class="distance-summary"><span class="distance-icon"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i></span><div><small>ESTIMASI JARAK JALAN</small><strong id="distance-value">—</strong></div></div>
-              <p id="distance-message">Opsi pengiriman tersedia berdasarkan jarak.</p>
-            </div>
-            <fieldset class="shipping-fieldset" id="shipping-fieldset" disabled>
-              <legend>Pilih pengiriman</legend>
-              <div class="shipping-options" id="shipping-options"></div>
-              <p class="shipping-footnote" id="shipping-footnote">Pilih titik lokasi dan hitung jarak terlebih dahulu.</p>
-            </fieldset>
-            <div class="checkout-divider"></div>
-            <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Kode pembayaran dan unggah bukti akan tersedia setelah backend aktif.</p></div></div>
+            <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Metode dan ongkir pengiriman akan dikonfirmasi setelah alamat diperiksa.</p></div></div>
             <button class="submit-button" type="submit">Lihat ringkasan pesanan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             <p class="demo-notice" id="form-status" role="status" aria-live="polite">Prototipe tampilan: pesanan belum dikirim atau disimpan.</p>
           </aside>
@@ -72,7 +53,7 @@
       </form>
     </section>
 
-      </main>
+  </main>
 
   <dialog class="summary-dialog" id="summary-dialog" aria-labelledby="summary-title">
     <div class="dialog-head"><span class="dialog-mark"><i class="fa-solid fa-house" aria-hidden="true"></i></span><button type="button" class="dialog-close" id="close-dialog" aria-label="Tutup ringkasan"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
@@ -84,7 +65,6 @@
   </dialog>
   <div class="dialog-backdrop" id="dialog-backdrop" hidden></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="script.js"></script>
 </body>
 </html>
