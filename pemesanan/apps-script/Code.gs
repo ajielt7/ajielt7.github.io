@@ -21,8 +21,7 @@ function doPost(event) {
   if (!constantTimeEquals_(String(payload.token || ''), expectedToken)) {
     return output_({ ok: false, error: 'Permintaan tidak diizinkan.' });
   }
-  if (payload.action === 'authorizeProof') return authorizeProof_(payload);
-  if (payload.action === 'attachProof') return attachProof_(payload);
+  if (payload.action === 'uploadProof') return uploadProof_(payload);
   if (payload.action !== 'createOrder' || !payload.order) {
     return output_({ ok: false, error: 'Aksi tidak dikenal.' });
   }
@@ -90,48 +89,76 @@ function getOrdersSheet_() {
   return sheet;
 }
 
-function authorizeProof_(payload) {
+function uploadProof_(payload) {
+  const orderId = String(payload.orderId || '');
+  const paymentCode = String(payload.paymentCode || '');
+  const phone = String(payload.phone || '').replace(/\D/g, '');
+  const mimeType = String(payload.mimeType || '');
+  const extension = String(payload.extension || '');
+  const encoded = String(payload.imageBase64 || '');
+  const extensions = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+  if (!/^[0-9a-f-]{36}$/i.test(orderId) || !/^PNA-\d{8}-[A-F0-9]{8}$/.test(paymentCode) || !phone || extensions[mimeType] !== extension || !encoded || encoded.length > 7 * 1024 * 1024) {
+    return output_({ ok: false, error: 'Data bukti pembayaran tidak valid.' });
+  }
+  let bytes;
+  try {
+    bytes = Utilities.base64Decode(encoded);
+  } catch (_error) {
+    return output_({ ok: false, error: 'Data gambar tidak valid.' });
+  }
+  if (!bytes.length || bytes.length > 5 * 1024 * 1024 || !validImageBytes_(bytes, mimeType)) {
+    return output_({ ok: false, error: 'Gambar harus JPG, PNG, atau WebP yang valid dan maksimal 5 MB.' });
+  }
+
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
-    const rowNumber = findOrderRow_(payload);
-    if (!rowNumber) return output_({ ok: true, authorized: false, error: 'Pesanan tidak ditemukan.' });
+    const rowNumber = findOrderRow_({ orderId, paymentCode, phone });
+    if (!rowNumber) return output_({ ok: false, error: 'Pesanan tidak ditemukan. Periksa kode pembayaran dan nomor WhatsApp.' });
     const sheet = getOrdersSheet_();
     const row = sheet.getRange(rowNumber, 1, 1, ORDER_HEADERS.length).getValues()[0];
-    if (row[16] !== 'MENUNGGU_PEMBAYARAN') return output_({ ok: true, authorized: false, error: 'Status pesanan tidak mengizinkan unggah bukti.' });
-    if (row[18]) return output_({ ok: true, authorized: false, error: 'Bukti pembayaran untuk pesanan ini sudah pernah diunggah.' });
-    return output_({ ok: true, authorized: true });
+    if (row[16] !== 'MENUNGGU_PEMBAYARAN') return output_({ ok: false, error: 'Status pesanan tidak mengizinkan unggah bukti.' });
+    if (row[18]) return output_({ ok: false, error: 'Bukti pembayaran untuk pesanan ini sudah pernah diunggah.' });
+
+    const folder = getProofFolder_();
+    const uploadedAt = new Date();
+    const blob = Utilities.newBlob(bytes, mimeType, `${paymentCode}-${orderId}.${extension}`);
+    let file;
+    try {
+      file = folder.createFile(blob);
+      sheet.getRange(rowNumber, 19, 1, 2).setValues([[safeCell_(file.getId()), uploadedAt]]);
+      return output_({ ok: true });
+    } catch (error) {
+      if (file) file.setTrashed(true);
+      throw error;
+    }
   } catch (error) {
-    console.error('authorizeProof failed', error);
-    return output_({ ok: false, error: 'Pesanan tidak dapat diverifikasi.' });
+    console.error('uploadProof failed', error);
+    return output_({ ok: false, error: 'Bukti gagal disimpan ke Google Drive.' });
   } finally {
     if (lock.hasLock()) lock.releaseLock();
   }
 }
 
-function attachProof_(payload) {
-  const fileKey = String(payload.fileKey || '');
-  if (!/^payment-proofs\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/i.test(fileKey)) {
-    return output_({ ok: false, error: 'Referensi file bukti tidak valid.' });
-  }
-  const lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(10000);
-    const rowNumber = findOrderRow_(payload);
-    if (!rowNumber) return output_({ ok: false, error: 'Pesanan tidak ditemukan.' });
-    const sheet = getOrdersSheet_();
-    const row = sheet.getRange(rowNumber, 1, 1, ORDER_HEADERS.length).getValues()[0];
-    if (row[16] !== 'MENUNGGU_PEMBAYARAN' || row[18]) {
-      return output_({ ok: false, error: 'Pesanan sudah berubah atau bukti telah diunggah.' });
-    }
-    sheet.getRange(rowNumber, 19, 1, 2).setValues([[safeCell_(fileKey), safeCell_(payload.uploadedAt || new Date().toISOString())]]);
-    return output_({ ok: true });
-  } catch (error) {
-    console.error('attachProof failed', error);
-    return output_({ ok: false, error: 'Bukti gagal dicatat pada pesanan.' });
-  } finally {
-    if (lock.hasLock()) lock.releaseLock();
-  }
+function getProofFolder_() {
+  const properties = PropertiesService.getScriptProperties();
+  const folderId = properties.getProperty('PROOF_FOLDER_ID');
+  if (folderId) return DriveApp.getFolderById(folderId);
+  const folder = DriveApp.createFolder('Bukti Pembayaran');
+  properties.setProperty('PROOF_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function setupProofFolder() {
+  const folder = getProofFolder_();
+  Logger.log(`Folder bukti siap: ${folder.getUrl()}`);
+}
+
+function validImageBytes_(bytes, mimeType) {
+  if (mimeType === 'image/png') return bytes.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => (bytes[index] & 255) === value);
+  if (mimeType === 'image/jpeg') return bytes.length >= 3 && (bytes[0] & 255) === 255 && (bytes[1] & 255) === 216 && (bytes[2] & 255) === 255;
+  if (mimeType === 'image/webp') return bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4).map((value) => value & 255)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12).map((value) => value & 255)) === 'WEBP';
+  return false;
 }
 
 function findOrderRow_(payload) {
@@ -182,3 +209,4 @@ function output_(value) {
   return ContentService.createTextOutput(JSON.stringify(value))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
