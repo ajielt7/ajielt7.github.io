@@ -26,12 +26,19 @@
   }));
   const products = Object.fromEntries(productList.map((product) => [product.id, product]));
   const cart = new Map();
+  const API_BASE = 'https://pemesanan-api.ajielt7.workers.dev';
+  let selectedDestination = null;
+  let selectedRate = null;
+  let searchTimer = null;
+  let searchController = null;
 
   const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
   }).format(amount);
 
   function renderCart() {
+    selectedRate = null;
+    document.querySelector('#shipping-rates').replaceChildren();
     const list = document.querySelector('#cart-items');
     const entries = [...cart.entries()];
     if (!entries.length) {
@@ -66,6 +73,92 @@
     }
     const subtotal = entries.reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     document.querySelector('#cart-subtotal').textContent = formatRupiah(subtotal);
+    updateQuoteButton();
+  }
+
+  function updateQuoteButton() {
+    document.querySelector('#shipping-quote-button').disabled = cart.size === 0 || !selectedDestination;
+  }
+
+  function destinationLabel(item) {
+    return item.label || [item.subdistrict, item.district, item.city, item.province, item.zip_code].filter(Boolean).join(', ');
+  }
+
+  async function searchDestinations(search) {
+    const results = document.querySelector('#destination-results');
+    if (searchController) searchController.abort();
+    searchController = new AbortController();
+    try {
+      const response = await fetch(`${API_BASE}/api/destinations?search=${encodeURIComponent(search)}`, { signal: searchController.signal });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Pencarian lokasi gagal.');
+      results.replaceChildren();
+      if (!result.data?.length) {
+        const empty = document.createElement('span'); empty.className = 'destination-empty'; empty.textContent = 'Lokasi tidak ditemukan.';
+        results.append(empty);
+        return;
+      }
+      result.data.forEach((location) => {
+        const option = document.createElement('button'); option.type = 'button'; option.className = 'destination-option';
+        option.setAttribute('role', 'option'); option.textContent = destinationLabel(location);
+        option.addEventListener('click', () => {
+          selectedDestination = { id: String(location.id), label: destinationLabel(location) };
+          document.querySelector('#destination-search').value = selectedDestination.label;
+          document.querySelector('#destination-id').value = selectedDestination.id;
+          results.replaceChildren();
+          document.querySelector('#shipping-rates').replaceChildren();
+          selectedRate = null;
+          updateQuoteButton();
+          setStatus('Lokasi tujuan dipilih. Hitung ongkir untuk melihat tarif JNE dan J&T.');
+        });
+        results.append(option);
+      });
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      results.replaceChildren();
+      setStatus(error.message || 'Layanan pencarian lokasi sedang tidak tersedia.', true);
+    }
+  }
+
+  async function calculateShipping() {
+    if (!selectedDestination || cart.size === 0) return;
+    const button = document.querySelector('#shipping-quote-button');
+    const rates = document.querySelector('#shipping-rates');
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Menghitung ongkir…';
+    selectedRate = null;
+    rates.replaceChildren();
+    try {
+      const response = await fetch(`${API_BASE}/api/shipping-cost`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destinationId: selectedDestination.id, items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })) })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Ongkir belum dapat dihitung.');
+      if (!result.data?.length) throw new Error('Tidak ada layanan JNE atau J&T untuk alamat ini.');
+      result.data.forEach((option, index) => {
+        const label = document.createElement('label'); label.className = 'shipping-rate-option';
+        const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.required = true;
+        radio.addEventListener('change', () => { selectedRate = option; });
+        const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
+        const title = document.createElement('strong'); title.textContent = `${option.name || option.code} ${option.service || ''}`.trim();
+        const detail = document.createElement('small'); detail.textContent = [option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
+        const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
+        copy.append(title, detail); label.append(radio, copy, price); rates.append(label);
+      });
+      const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
+      weightNote.textContent = `Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram.`;
+      rates.append(weightNote);
+      setStatus('Pilih salah satu layanan agar ongkir masuk ke ringkasan.');
+    } catch (error) {
+      const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Layanan RajaOngkir sedang tidak tersedia.';
+      rates.replaceChildren(message);
+      setStatus(error.message || 'Ongkir belum dapat dihitung.', true);
+    } finally {
+      button.innerHTML = '<i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Hitung ulang ongkir JNE / J&T';
+      updateQuoteButton();
+    }
   }
 
   function renderProducts() {
@@ -105,7 +198,10 @@
       ['Nama penerima', data.get('customerName')],
       ['WhatsApp', data.get('phone')],
       ['Alamat', data.get('address')],
-      ['Pengiriman', 'Metode dan ongkir dikonfirmasi setelah alamat diperiksa']
+      ['Lokasi tujuan', selectedDestination.label],
+      ['Pengiriman', `${selectedRate.name || selectedRate.code} ${selectedRate.service || ''}`.trim()],
+      ['Ongkir', formatRupiah(Number(selectedRate.cost))],
+      ['Total sementara', formatRupiah(subtotal + Number(selectedRate.cost))]
     ];
     const summary = document.querySelector('#summary-content');
     summary.replaceChildren(...rows.map(([label, value]) => {
@@ -124,6 +220,20 @@
   }
 
   renderProducts();
+  const destinationInput = document.querySelector('#destination-search');
+  destinationInput.addEventListener('input', () => {
+    if (searchController) searchController.abort();
+    selectedDestination = null;
+    selectedRate = null;
+    document.querySelector('#destination-id').value = '';
+    document.querySelector('#destination-results').replaceChildren();
+    document.querySelector('#shipping-rates').replaceChildren();
+    updateQuoteButton();
+    const search = destinationInput.value.trim();
+    clearTimeout(searchTimer);
+    if (search.length >= 3) searchTimer = setTimeout(() => searchDestinations(search), 350);
+  });
+  document.querySelector('#shipping-quote-button').addEventListener('click', calculateShipping);
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     setStatus('');
@@ -131,6 +241,16 @@
     if (cart.size === 0) {
       setStatus('Pilih setidaknya satu produk dari daftar terlebih dahulu.', true);
       document.querySelector('#product-list').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (!selectedDestination) {
+      setStatus('Pilih kelurahan, kecamatan, atau kota dari hasil pencarian terlebih dahulu.', true);
+      destinationInput.focus();
+      return;
+    }
+    if (!selectedRate) {
+      setStatus('Hitung ongkir dan pilih layanan JNE atau J&T terlebih dahulu.', true);
+      document.querySelector('#shipping-quote-button').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     showSummary(new FormData(form));
