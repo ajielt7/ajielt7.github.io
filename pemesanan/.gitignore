@@ -1,9 +1,10 @@
-# Local credentials and secrets
+# API credentials and other local secrets
 ApiKey.txt
+google_script_token.txt
 API KEY
 API KEY.txt
-google_script_token.txt
 .dev.vars
 .env
 .env.*
 !.env.example
+
