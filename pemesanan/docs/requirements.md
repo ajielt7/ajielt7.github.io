@@ -17,7 +17,7 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 | --- | --- | --- |
 | FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Halaman menampilkan 12 pilihan produk dan keranjang checkout di sisi katalog pada layar lebar. Checkout memuat kontak, alamat tertulis, pencarian tujuan ekspedisi, dan subtotal produk. Detail tulisan/desain produk ditunda; nama, ukuran, dan harga pada 12 kartu masih contoh prototipe. |
 | FR-02 | Pemilihan titik rumah pada peta. | Ditunda sementara; checkout saat ini hanya meminta alamat tertulis dan tidak mengumpulkan koordinat. |
-| FR-03 | Pelanggan memilih tujuan ekspedisi dan melihat ongkir. | Setelah lokasi tujuan dipilih dan keranjang terisi, sistem menghitung estimasi otomatis, menampilkan kelompok kurir dari yang termurah, membuka kurir termurah terlebih dahulu, dan mengurutkan layanan di dalam kurir dari harga terendah. Layanan lain termasuk kargo dapat dipilih bila dikembalikan API. |
+| FR-03 | Pelanggan memilih tujuan ekspedisi dan melihat ongkir. | Setelah lokasi tujuan dipilih dan keranjang terisi, sistem menghitung estimasi otomatis, menampilkan kurir termurah, maksimal dua alternatif reguler, dan satu kurir dengan layanan kargo jika tersedia. Kurir lain dibuka melalui bagian kurir lainnya; layanan per kurir diurutkan dari harga terendah. Layanan lain termasuk kargo dapat dipilih bila dikembalikan API. |
 | FR-04 | Perhitungan ongkir ojol. | Rumus bisnis: 4 km pertama Rp10.000, setiap km setelahnya Rp2.500, jarak pecahan dibulatkan ke atas. Kalkulasi UI sementara dinonaktifkan bersama fitur titik lokasi. |
 | FR-05 | Sistem memperoleh ongkir ekspedisi. | Worker meminta tarif beberapa kode kurir dalam satu permintaan ke RajaOngkir API V2. Hanya layanan yang tersedia untuk rute dan akun yang tampil. Bobot prototipe 500 gram per item; perlu diganti bobot aktual sebelum dipakai untuk transaksi nyata. |
 | FR-06 | Checkout menampilkan kode referensi pembayaran otomatis. | Kode dibuat unik oleh backend, ditampilkan dengan instruksi yang jelas, dan dikaitkan dengan pesanan. Pelanggan mencantumkan kode pada deskripsi transfer. |
@@ -49,4 +49,3 @@ Akun pelanggan, payment gateway, pengecekan mutasi bank otomatis, inventori otom
 - Pada jarak 40 km atau lebih, hanya kurir ekspedisi tersedia.
 - Ongkir ekspedisi menggunakan RajaOngkir; tarif ojol memakai formula per km di FR-04.
 - Pembayaran dilakukan lewat transfer bank dan diverifikasi admin secara manual terhadap mutasi.
-
