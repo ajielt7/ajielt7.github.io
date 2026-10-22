@@ -6,15 +6,16 @@ Proyek percobaan untuk membangun sistem pemesanan barang fisik (awal: nomor ruma
 
 - **Frontend:** GitHub Pages.
 - **Aset frontend sementara:** foto dari Unsplash dan ikon Font Awesome melalui CDN.
-- **Backend/API:** Cloudflare Workers.
+- **Backend/API:** Cloudflare Worker `pemesanan-api` untuk pencarian tujuan dan perhitungan tarif JNE/J&T.
 - **Database pesanan:** Google Sheets.
 - **Bukti transfer:** Google Drive; Sheet menyimpan metadata dan referensi file.
+- **Ongkir ekspedisi:** API RajaOngkir V2 melalui Worker; key disimpan sebagai secret Cloudflare. Bobot sementara 500 gram per item.
 - **Peta/rute:** pemilihan titik lokasi dan perhitungan rute sementara dihapus dari prototipe. Dapat diaktifkan kembali setelah alur checkout dan layanan jarak diputuskan.
 
 ## Alur ringkas
 
 1. Pelanggan memilih produk dan memasukkan kontak serta alamat tertulis.
-2. Metode dan ongkir pengiriman dikonfirmasi manual setelah alamat diperiksa.
+2. Pelanggan memilih kelurahan/kecamatan/kota dari pencarian RajaOngkir, lalu melihat tarif JNE/J&T berdasarkan bobot contoh.
 3. Pelanggan mentransfer ke rekening usaha, mencantumkan kode pada deskripsi transfer, lalu mengunggah screenshot bukti.
 4. Admin memeriksa bukti dan mutasi bank melalui dashboard, kemudian menyetujui pesanan secara manual.
 5. Setelah ACC, sistem mengirim WhatsApp otomatis. Integrasi WhatsApp Business Platform/API dan biayanya masih perlu dipastikan.
@@ -28,9 +29,9 @@ Proyek percobaan untuk membangun sistem pemesanan barang fisik (awal: nomor ruma
 
 ## Publikasi GitHub Pages
 
-Rencana publikasi saat ini adalah menaruh aplikasi di folder `pemesanan/` pada repository Pages `ajielt7/ajielt7.github.io`, sehingga situs utama tidak tertimpa. Jika file aplikasi ditempatkan di folder tersebut pada branch yang dipakai Pages, alamatnya menjadi `https://ajielt7.github.io/pemesanan/`.
+Frontend berada di folder `pemesanan/` pada repository Pages `ajielt7/ajielt7.github.io`: `https://ajielt7.github.io/pemesanan/`.
 
 ## Status
 
-Prototipe frontend pemesanan sudah dibuat. Backend belum terhubung: pesanan tidak tersimpan, kode pembayaran belum dibuat, bukti belum diunggah, dan ongkir belum dihitung. Titik lokasi rumah sementara dihapus dari checkout. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
+Prototipe checkout dan integrasi Worker RajaOngkir sudah disiapkan. Respons live RajaOngkir belum diverifikasi dari sesi ini. Pesanan tetap belum tersimpan; kode pembayaran dan unggah bukti belum tersedia. Bobot katalog masih contoh. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
 
