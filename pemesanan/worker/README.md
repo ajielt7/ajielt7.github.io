@@ -17,4 +17,3 @@ Key Shipping Cost disimpan pada secret Worker `RAJAONGKIR_API_KEY`. Jangan masuk
 Berat contoh dihitung server sebagai 500 gram per unit produk. Perbarui `GRAMS_PER_PRODUCT` di `index.js` setelah berat aktual produk beserta kemasan diketahui.
 
 Checkout publik menggunakan `https://pemesanan-api.ajielt7.workers.dev`. Worker menerima origin GitHub Pages proyek dan localhost untuk pengembangan.
-
