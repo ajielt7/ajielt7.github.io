@@ -31,12 +31,18 @@
   let selectedRate = null;
   let searchTimer = null;
   let searchController = null;
+  let quoteTimer = null;
+  let quoteController = null;
+  let quoteRequestId = 0;
 
   const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
   }).format(amount);
 
   function renderCart() {
+    clearTimeout(quoteTimer);
+    if (quoteController) quoteController.abort();
+    quoteRequestId += 1;
     selectedRate = null;
     document.querySelector('#shipping-rates').replaceChildren();
     const list = document.querySelector('#cart-items');
@@ -74,10 +80,20 @@
     const subtotal = entries.reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     document.querySelector('#cart-subtotal').textContent = formatRupiah(subtotal);
     updateQuoteButton();
+    scheduleShippingQuote();
   }
 
   function updateQuoteButton() {
     document.querySelector('#shipping-quote-button').disabled = cart.size === 0 || !selectedDestination;
+  }
+
+  function scheduleShippingQuote() {
+    if (!selectedDestination || cart.size === 0) {
+      if (quoteController) quoteController.abort();
+      return;
+    }
+    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir…');
+    quoteTimer = setTimeout(calculateShipping, 700);
   }
 
   function destinationLabel(item) {
@@ -104,13 +120,15 @@
         option.setAttribute('role', 'option'); option.textContent = destinationLabel(location);
         option.addEventListener('click', () => {
           selectedDestination = { id: String(location.id), label: destinationLabel(location) };
+          if (quoteController) quoteController.abort();
+          quoteRequestId += 1;
           document.querySelector('#destination-search').value = selectedDestination.label;
           document.querySelector('#destination-id').value = selectedDestination.id;
           results.replaceChildren();
           document.querySelector('#shipping-rates').replaceChildren();
           selectedRate = null;
           updateQuoteButton();
-          setStatus('Lokasi tujuan dipilih. Hitung ongkir untuk melihat tarif JNE dan J&T.');
+          scheduleShippingQuote();
         });
         results.append(option);
       });
@@ -123,6 +141,10 @@
 
   async function calculateShipping() {
     if (!selectedDestination || cart.size === 0) return;
+    clearTimeout(quoteTimer);
+    if (quoteController) quoteController.abort();
+    quoteController = new AbortController();
+    const requestId = ++quoteRequestId;
     const button = document.querySelector('#shipping-quote-button');
     const rates = document.querySelector('#shipping-rates');
     button.disabled = true;
@@ -133,32 +155,61 @@
       const response = await fetch(`${API_BASE}/api/shipping-cost`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destinationId: selectedDestination.id, items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })) })
+        body: JSON.stringify({ destinationId: selectedDestination.id, items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })) }),
+        signal: quoteController.signal
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Ongkir belum dapat dihitung.');
-      if (!result.data?.length) throw new Error('Tidak ada layanan JNE atau J&T untuk alamat ini.');
-      result.data.forEach((option, index) => {
-        const label = document.createElement('label'); label.className = 'shipping-rate-option';
-        const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.required = true;
-        radio.addEventListener('change', () => { selectedRate = option; });
-        const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-        const title = document.createElement('strong'); title.textContent = `${option.name || option.code} ${option.service || ''}`.trim();
-        const detail = document.createElement('small'); detail.textContent = [option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
-        const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
-        copy.append(title, detail); label.append(radio, copy, price); rates.append(label);
+      if (requestId !== quoteRequestId) return;
+      const options = (result.data || []).filter((option) => Number.isFinite(Number(option.cost)) && Number(option.cost) >= 0)
+        .map((option) => {
+          const serviceInfo = [option.name, option.code, option.service, option.description, option.category, option.service_type].join(' ').toLocaleLowerCase('id-ID');
+          return { ...option, shippingCategory: /(cargo|kargo|trucking|jtr|big.?pack|freight)/.test(serviceInfo) ? 'cargo' : 'regular' };
+        })
+        .sort((a, b) => Number(a.cost) - Number(b.cost));
+      if (!options.length) throw new Error('Belum ada layanan ekspedisi untuk alamat ini.');
+      selectedRate = options[0];
+      const groups = [
+        { key: 'regular', label: 'Reguler' },
+        { key: 'cargo', label: 'Kargo' }
+      ];
+      groups.forEach(({ key, label: groupLabel }) => {
+        const groupOptions = options.filter((option) => option.shippingCategory === key);
+        if (!groupOptions.length) return;
+        const heading = document.createElement('h4'); heading.className = 'shipping-rate-group-title'; heading.textContent = groupLabel;
+        rates.append(heading);
+        groupOptions.forEach((option) => {
+          const index = options.indexOf(option);
+          const label = document.createElement('label'); label.className = 'shipping-rate-option';
+          const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.required = true;
+          radio.checked = option === selectedRate;
+          label.classList.toggle('selected', radio.checked);
+          radio.addEventListener('change', () => {
+            selectedRate = option;
+            rates.querySelectorAll('.shipping-rate-option').forEach((rateLabel) => rateLabel.classList.remove('selected'));
+            label.classList.add('selected');
+          });
+          const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
+          const title = document.createElement('strong'); title.textContent = `${option.name || option.code} ${option.service || ''}`.trim();
+          const detail = document.createElement('small'); detail.textContent = [option === selectedRate ? 'Opsi termurah' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
+          const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
+          copy.append(title, detail); label.append(radio, copy, price); rates.append(label);
+        });
       });
       const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
-      weightNote.textContent = `Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram.`;
+      weightNote.textContent = `Pilihan termurah dipilih otomatis. Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram. Ketersediaan layanan kargo mengikuti rute dan hasil RajaOngkir.`;
       rates.append(weightNote);
-      setStatus('Pilih salah satu layanan agar ongkir masuk ke ringkasan.');
+      setStatus('Tarif termurah dipilih otomatis. Anda bisa memilih jasa kirim atau layanan kargo lain yang tersedia.');
     } catch (error) {
+      if (error.name === 'AbortError' || requestId !== quoteRequestId) return;
       const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Layanan RajaOngkir sedang tidak tersedia.';
       rates.replaceChildren(message);
       setStatus(error.message || 'Ongkir belum dapat dihitung.', true);
     } finally {
-      button.innerHTML = '<i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Hitung ulang ongkir JNE / J&T';
-      updateQuoteButton();
+      if (requestId === quoteRequestId) {
+        button.innerHTML = '<i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Hitung ulang ongkir';
+        updateQuoteButton();
+      }
     }
   }
 
@@ -224,6 +275,9 @@
   const destinationInput = document.querySelector('#destination-search');
   destinationInput.addEventListener('input', () => {
     if (searchController) searchController.abort();
+    clearTimeout(quoteTimer);
+    if (quoteController) quoteController.abort();
+    quoteRequestId += 1;
     selectedDestination = null;
     selectedRate = null;
     document.querySelector('#destination-id').value = '';
@@ -250,7 +304,7 @@
       return;
     }
     if (!selectedRate) {
-      setStatus('Hitung ongkir dan pilih layanan JNE atau J&T terlebih dahulu.', true);
+      setStatus('Tunggu estimasi ongkir selesai, lalu pilih salah satu layanan pengiriman.', true);
       document.querySelector('#shipping-quote-button').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
