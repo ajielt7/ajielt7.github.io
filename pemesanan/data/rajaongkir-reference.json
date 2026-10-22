@@ -10,11 +10,68 @@
   "couriers": [
     {
       "code": "jne",
-      "name": "JNE"
+      "name": "JNE",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
     },
     {
       "code": "jnt",
-      "name": "J&T Express"
+      "name": "J&T Express",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "sicepat",
+      "name": "SiCepat",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "ide",
+      "name": "IDExpress",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "sap",
+      "name": "SAP Express",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "ninja",
+      "name": "Ninja Xpress",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "tiki",
+      "name": "TIKI",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "wahana",
+      "name": "Wahana Express",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "pos",
+      "name": "POS Indonesia",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "sentral",
+      "name": "Sentral Cargo",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "lion",
+      "name": "Lion Parcel",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "rex",
+      "name": "Royal Express Asia",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
+    },
+    {
+      "code": "spx",
+      "name": "SPX Express",
+      "availability": "requested; shown only if RajaOngkir returns a rate for this route"
     }
   ],
   "destinationSearchCache": {
