@@ -9,9 +9,12 @@ const PRODUCT_IDS = new Set([
   'akrilik-silver', 'nomor-timbul', 'nomor-dobel', 'nomor-led', 'nomor-jalan', 'nomor-keluarga'
 ]);
 const GRAMS_PER_PRODUCT = 500; // Bobot kemasan contoh sementara, dipilih untuk prototipe.
+// ID asal hasil verifikasi RajaOngkir: Cimekar, Cileunyi, Bandung (40623).
+const ORIGIN_DESTINATION_ID = 5052;
+const DESTINATION_CACHE_SECONDS = 60 * 60 * 24 * 30;
 
-function json(data, status, origin) {
-  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' };
+function json(data, status, origin, cacheControl = 'no-store') {
+  const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cacheControl };
   if (origin && ALLOWED_ORIGINS.has(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
@@ -47,7 +50,9 @@ export default {
         if (search.length < 3 || search.length > 80) return json({ error: 'Masukkan minimal 3 karakter lokasi.' }, 400, origin);
         const query = new URLSearchParams({ search, limit: '10', offset: '0' });
         const result = await rajaOngkir(`/destination/domestic-destination?${query}`, {}, env.RAJAONGKIR_API_KEY);
-        return json({ data: Array.isArray(result.data) ? result.data : [] }, 200, origin);
+        const data = Array.isArray(result.data) ? result.data : [];
+        const ttl = data.length ? DESTINATION_CACHE_SECONDS : 300;
+        return json({ data }, 200, origin, `public, max-age=${ttl}, s-maxage=${ttl}`);
       }
 
       if (url.pathname === '/api/shipping-cost' && request.method === 'POST') {
@@ -68,16 +73,8 @@ export default {
           units += item.quantity;
         }
         if (units > 40) return json({ error: 'Jumlah maksimal 40 produk per perhitungan.' }, 400, origin);
-        const originQuery = new URLSearchParams({ search: 'Cimekar', limit: '10', offset: '0' });
-        const originResult = await rajaOngkir(`/destination/domestic-destination?${originQuery}`, {}, env.RAJAONGKIR_API_KEY);
-        const normalize = (value) => String(value || '').trim().toLocaleLowerCase('id-ID');
-        const originLocation = (originResult.data || []).find((location) =>
-          normalize(location.label).includes('cimekar') &&
-          normalize(location.label).includes('cileunyi')
-        );
-        if (!originLocation) return json({ error: 'Lokasi asal Cimekar, Cileunyi belum ditemukan di RajaOngkir.' }, 502, origin);
         const form = new URLSearchParams({
-          origin: String(originLocation.id),
+          origin: String(ORIGIN_DESTINATION_ID),
           destination: String(body.destinationId),
           weight: String(units * GRAMS_PER_PRODUCT),
           courier: 'jne:jnt',
