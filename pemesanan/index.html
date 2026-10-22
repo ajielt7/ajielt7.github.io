@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f3ed">
   <meta name="description" content="Pesan nomor rumah akrilik sesuai gaya rumah Anda.">
-  <title>Ruma — Nomor Rumah Akrilik</title>
+  <title>Ruma â€” Nomor Rumah Akrilik</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
@@ -32,11 +32,11 @@
       <div class="hero-visual">
         <img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&amp;fit=crop&amp;w=1300&amp;q=85" alt="Teras rumah modern dengan suasana hangat" fetchpriority="high">
         <div class="image-shade"></div>
-        <div class="number-plaque" aria-label="Contoh plakat nomor rumah"><span>JALAN MELATI</span><strong>27<span>A</span></strong><small>CIMEKAR · BANDUNG</small></div>
-        <div class="image-note"><span class="note-star">✳</span><span>Sentuhan personal<br>di depan pintu</span></div>
+        <div class="number-plaque" aria-label="Contoh plakat nomor rumah"><span>JALAN MELATI</span><strong>27<span>A</span></strong><small>CIMEKAR Â· BANDUNG</small></div>
+        <div class="image-note"><span class="note-star">âœ³</span><span>Sentuhan personal<br>di depan pintu</span></div>
         <div class="hero-image-index">01 <span></span> 03</div>
       </div>
-      <div class="hero-side-label">AKRILIK CUSTOM&nbsp; · &nbsp;DIBUAT DENGAN TELITI</div>
+      <div class="hero-side-label">AKRILIK CUSTOM&nbsp; Â· &nbsp;DIBUAT DENGAN TELITI</div>
     </section>
 
     <section class="intro-strip" id="tentang">
@@ -52,46 +52,47 @@
       </div>
 
       <form id="order-form" novalidate>
-        <div class="form-section-heading"><span class="step-number">01</span><div><h3>Detail produk</h3><p>Nomor dan tulisan yang ingin dibuat.</p></div></div>
-        <div class="fields-grid">
-          <label class="field field-wide">Tulisan pada nomor rumah <span class="required">*</span><input name="displayText" required maxlength="60" placeholder="Contoh: 27A atau Rumah Keluarga Ardi" autocomplete="off"><small>Gunakan tulisan persis seperti yang ingin dicetak.</small></label>
-          <label class="field">Jumlah <span class="required">*</span><span class="quantity-control"><button class="quantity-button" type="button" data-quantity-step="-1" aria-label="Kurangi jumlah"><i class="fa-solid fa-minus" aria-hidden="true"></i></button><input name="quantity" type="number" min="1" max="20" value="1" required aria-label="Jumlah pesanan"><button class="quantity-button" type="button" data-quantity-step="1" aria-label="Tambah jumlah"><i class="fa-solid fa-plus" aria-hidden="true"></i></button></span></label>
-          <label class="field">Preferensi warna <span class="optional">opsional</span><select name="color"><option value="Belum ditentukan">Pilih nanti</option><option>Hitam</option><option>Putih</option><option>Emas</option><option>Silver</option><option>Custom / diskusi</option></select></label>
-          <label class="field field-wide">Catatan desain <span class="optional">opsional</span><textarea name="designNotes" rows="3" maxlength="400" placeholder="Ukuran, gaya huruf, atau detail yang ingin didiskusikan"></textarea></label>
+        <div class="catalog-layout">
+          <div class="catalog-column">
+            <div class="form-section-heading"><span class="step-number">01</span><div><h3>Pilih produk</h3><p>Pilih produk, lalu atur jumlahnya langsung di checkout.</p></div></div>
+            <p class="catalog-demo-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Harga, ukuran, dan model berikut masih contoh prototipe.</p>
+            <div class="product-grid" id="product-list" aria-label="Daftar 12 produk nomor rumah"></div>
+          </div>
+          <aside class="checkout-panel" aria-labelledby="checkout-title">
+            <div class="checkout-panel-heading"><span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span><div><small>KERANJANG & DATA PEMESAN</small><h3 id="checkout-title">Checkout</h3></div></div>
+            <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol “Pilih” pada produk.</p></div>
+            <div class="cart-total"><span>Subtotal produk</span><strong id="cart-subtotal">Rp0</strong></div>
+            <div class="checkout-divider"></div>
+            <div class="form-section-heading checkout-subheading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3><p>Untuk konfirmasi dan pengiriman.</p></div></div>
+            <div class="checkout-fields">
+              <label class="field">Nama lengkap <span class="required">*</span><input name="customerName" required autocomplete="name" placeholder="Nama penerima"></label>
+              <label class="field">Nomor WhatsApp <span class="required">*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="08xx xxxx xxxx"></label>
+              <label class="field">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
+            </div>
+            <div class="checkout-divider"></div>
+            <div class="form-section-heading checkout-subheading"><span class="step-number">03</span><div><h3>Titik lokasi rumah</h3><p>Ketuk peta untuk menandai lokasi.</p></div></div>
+            <div class="map-panel">
+              <div class="map-topline"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> TITIK PENGIRIMAN</span><button type="button" class="map-locate" id="locate-button"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Lokasiku</button></div>
+              <div id="delivery-map" aria-label="Peta untuk memilih lokasi pengiriman"></div>
+              <div class="map-foot"><span id="location-label">Belum ada titik dipilih</span><span id="coordinate-label">Pilih titik pada peta</span></div>
+              <button type="button" class="route-button" id="route-button" disabled><i class="fa-solid fa-route" aria-hidden="true"></i> Hitung jarak pengiriman</button>
+              <p class="map-privacy"><i class="fa-solid fa-lock" aria-hidden="true"></i> Koordinat digunakan untuk menghitung ongkir dan menyiapkan pengiriman.</p>
+            </div>
+            <div class="delivery-result" id="delivery-result" hidden aria-live="polite">
+              <div class="distance-summary"><span class="distance-icon"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i></span><div><small>ESTIMASI JARAK JALAN</small><strong id="distance-value">—</strong></div></div>
+              <p id="distance-message">Opsi pengiriman tersedia berdasarkan jarak.</p>
+            </div>
+            <fieldset class="shipping-fieldset" id="shipping-fieldset" disabled>
+              <legend>Pilih pengiriman</legend>
+              <div class="shipping-options" id="shipping-options"></div>
+              <p class="shipping-footnote" id="shipping-footnote">Pilih titik lokasi dan hitung jarak terlebih dahulu.</p>
+            </fieldset>
+            <div class="checkout-divider"></div>
+            <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Kode pembayaran dan unggah bukti akan tersedia setelah backend aktif.</p></div></div>
+            <button class="submit-button" type="submit">Lihat ringkasan pesanan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            <p class="demo-notice" id="form-status" role="status" aria-live="polite">Prototipe tampilan: pesanan belum dikirim atau disimpan.</p>
+          </aside>
         </div>
-
-        <div class="form-divider"></div>
-        <div class="form-section-heading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3><p>Supaya kami tahu harus menghubungi dan mengirim ke mana.</p></div></div>
-        <div class="fields-grid">
-          <label class="field">Nama lengkap <span class="required">*</span><input name="customerName" required autocomplete="name" placeholder="Nama penerima"></label>
-          <label class="field">Nomor WhatsApp <span class="required">*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="08xx xxxx xxxx"><small>Untuk konfirmasi detail dan pengiriman.</small></label>
-          <label class="field field-wide">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
-        </div>
-
-        <div class="form-divider"></div>
-        <div class="form-section-heading"><span class="step-number">03</span><div><h3>Titik lokasi rumah</h3><p>Ketuk peta untuk menandai lokasi pengiriman.</p></div></div>
-        <div class="map-panel">
-          <div class="map-topline"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> TITIK PENGIRIMAN</span><button type="button" class="map-locate" id="locate-button"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Gunakan lokasiku</button></div>
-          <div id="delivery-map" aria-label="Peta untuk memilih lokasi pengiriman"></div>
-          <div class="map-foot"><span id="location-label">Belum ada titik dipilih</span><span id="coordinate-label">Pilih titik pada peta</span></div>
-          <button type="button" class="route-button" id="route-button" disabled><i class="fa-solid fa-route" aria-hidden="true"></i> Hitung jarak pengiriman</button>
-          <p class="map-privacy"><i class="fa-solid fa-lock" aria-hidden="true"></i> Koordinat digunakan untuk menghitung ongkir dan menyiapkan pengiriman.</p>
-        </div>
-
-        <div class="delivery-result" id="delivery-result" hidden aria-live="polite">
-          <div class="distance-summary"><span class="distance-icon"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i></span><div><small>ESTIMASI JARAK JALAN</small><strong id="distance-value">—</strong></div></div>
-          <p id="distance-message">Opsi pengiriman tersedia berdasarkan jarak.</p>
-        </div>
-        <fieldset class="shipping-fieldset" id="shipping-fieldset" disabled>
-          <legend>Pilih pengiriman</legend>
-          <div class="shipping-options" id="shipping-options"></div>
-          <p class="shipping-footnote" id="shipping-footnote">Pilih titik lokasi dan hitung jarak terlebih dahulu.</p>
-        </fieldset>
-
-        <div class="form-divider"></div>
-        <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Setelah sistem pesanan aktif, kode referensi pembayaran akan tampil di checkout. Cantumkan kode tersebut pada deskripsi transfer dan unggah screenshot bukti pembayaran.</p></div></div>
-        <button class="submit-button" type="submit">Lihat ringkasan pesanan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-        <p class="demo-notice" id="form-status" role="status" aria-live="polite">Prototipe tampilan: pesanan belum dikirim atau disimpan.</p>
       </form>
     </section>
 
@@ -117,3 +118,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
