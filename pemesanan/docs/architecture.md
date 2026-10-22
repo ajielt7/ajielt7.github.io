@@ -29,7 +29,7 @@ flowchart LR
 | Leaflet + OpenStreetMap | Menyediakan UI peta bagi pelanggan untuk memilih pin rumah. Atribusi dan kebijakan penyedia tile harus dipatuhi. |
 | Cloudflare Worker | Worker `pemesanan-api` menyediakan `/api/destinations` dan `/api/shipping-cost` untuk RajaOngkir. API pesanan/admin belum dibangun. |
 | OSRM | Menghasilkan estimasi jarak rute jalan untuk tarif ojol pada prototipe. Endpoint yang digunakan dan strategi pengganti perlu diputuskan. |
-| RajaOngkir | Worker memakai API Shipping Cost V2 untuk mencari tujuan dan meminta tarif JNE/J&T. Hasil pencarian tujuan di-cache sebagai respons JSON pada Workers Cache selama 30 hari; tarif tetap dihitung langsung. Bobot item saat ini contoh 500 gram. |
+| RajaOngkir | Worker memakai API Shipping Cost V2 untuk mencari tujuan dan meminta tarif beberapa ekspedisi sekaligus. Hasil pencarian tujuan di-cache sebagai respons JSON pada Workers Cache selama 30 hari; tarif tetap dihitung langsung. Bobot item saat ini contoh 500 gram. |
 | Google Sheets | Menyimpan kolom pesanan, alamat/koordinat, kode referensi, jumlah dan ongkir, status pembayaran/pesanan, serta ID/link Drive bukti. |
 | Google Drive | Menyimpan screenshot bukti transfer. File tidak boleh dibagikan publik; dashboard mengambilnya melalui akses admin yang sah. |
 | Dashboard admin | Membutuhkan autentikasi admin. Menampilkan pesanan/bukti dan menyediakan aksi ACC setelah pengecekan manual mutasi bank. |
@@ -39,7 +39,7 @@ flowchart LR
 
 1. Pelanggan memilih produk, memasukkan kontak/alamat tertulis, lalu mencari kelurahan/kecamatan/kota tujuan.
 2. Frontend meminta hasil pencarian tujuan dari Worker. Pada cache miss Worker menghubungi RajaOngkir memakai secret API key di Cloudflare; hasilnya disimpan sebagai JSON di Workers Cache agar pencarian serupa berikutnya dapat memakai cache.
-3. Setelah pelanggan meminta hitung ongkir, Worker menggunakan ID asal Cimekar yang sudah dicatat di `data/rajaongkir-reference.json`, menghitung berat prototipe 500 gram per item, dan meminta tarif layanan JNE/J&T langsung dari RajaOngkir.
+3. Setelah lokasi dipilih dan keranjang berisi produk, frontend meminta estimasi ongkir otomatis. Worker menggunakan ID asal Cimekar yang dicatat di `data/rajaongkir-reference.json`, menghitung berat prototipe 500 gram per item, dan meminta tarif beberapa ekspedisi sekaligus. Frontend mengurutkan harga dan memilih yang termurah; layanan kargo dikelompokkan terpisah jika ditandai oleh hasil API. Tarif tetap diminta langsung dari RajaOngkir.
 4. Backend menetapkan order ID dan kode referensi pembayaran unik, menyimpan pesanan berstatus menunggu pembayaran, lalu mengembalikan checkout dan instruksi transfer.
 5. Pelanggan mencantumkan kode di deskripsi transfer dan mengunggah screenshot. Worker memvalidasi file, menyimpan file di Drive, dan mencatat referensi file/status bukti pada Sheet.
 6. Admin membuka dashboard yang dilindungi akses, membandingkan kode, nilai, bukti, dan mutasi rekening secara manual.
