@@ -8,6 +8,20 @@ const PRODUCT_IDS = new Set([
   'minimalis', 'premium', 'custom', 'akrilik-hitam', 'akrilik-putih', 'akrilik-emas',
   'akrilik-silver', 'nomor-timbul', 'nomor-dobel', 'nomor-led', 'nomor-jalan', 'nomor-keluarga'
 ]);
+const PRODUCTS = {
+  minimalis: { name: 'Nomor Rumah Minimalis', price: 75000 },
+  premium: { name: 'Nomor Rumah Premium', price: 120000 },
+  custom: { name: 'Nomor Rumah Custom', price: 150000 },
+  'akrilik-hitam': { name: 'Akrilik Hitam Elegan', price: 85000 },
+  'akrilik-putih': { name: 'Akrilik Putih Minimal', price: 85000 },
+  'akrilik-emas': { name: 'Akrilik Nuansa Emas', price: 95000 },
+  'akrilik-silver': { name: 'Akrilik Silver Modern', price: 95000 },
+  'nomor-timbul': { name: 'Nomor Timbul 3D', price: 135000 },
+  'nomor-dobel': { name: 'Nomor Lapis Ganda', price: 165000 },
+  'nomor-led': { name: 'Nomor Rumah LED', price: 250000 },
+  'nomor-jalan': { name: 'Nomor + Nama Jalan', price: 185000 },
+  'nomor-keluarga': { name: 'Nomor + Nama Keluarga', price: 175000 }
+};
 const GRAMS_PER_PRODUCT = 500; // Bobot kemasan contoh sementara, dipilih untuk prototipe.
 const COURIER_CODES = 'jne:sicepat:ide:sap:ninja:jnt:tiki:wahana:pos:sentral:lion:rex:spx';
 // ID asal hasil verifikasi RajaOngkir: Cimekar, Cileunyi, Bandung (40623).
@@ -43,10 +57,85 @@ export default {
     const origin = request.headers.get('Origin');
     if (!origin || !ALLOWED_ORIGINS.has(origin)) return json({ error: 'Origin tidak diizinkan.' }, 403);
     if (request.method === 'OPTIONS') return json({}, 204, origin);
-    if (!env.RAJAONGKIR_API_KEY) return json({ error: 'API ongkir belum dikonfigurasi.' }, 503, origin);
 
     try {
+      if (url.pathname === '/health' && request.method === 'GET') return json({ ok: true }, 200, origin);
+
+      if (url.pathname === '/api/orders' && request.method === 'POST') {
+        const contentLength = Number(request.headers.get('Content-Length') || 0);
+        if (contentLength > 16384) return json({ error: 'Data pesanan terlalu besar.' }, 413, origin);
+        if (!env.GOOGLE_APPS_SCRIPT_URL || !env.GOOGLE_SCRIPT_TOKEN) {
+          return json({ error: 'Penyimpanan pesanan belum dikonfigurasi.' }, 503, origin);
+        }
+        const body = await request.json().catch(() => null);
+        if (!body || !/^[0-9a-f-]{36}$/i.test(String(body.clientRequestId || ''))) {
+          return json({ error: 'ID permintaan pesanan tidak valid.' }, 400, origin);
+        }
+        const customer = body.customer || {};
+        const name = String(customer.name || '').trim();
+        const phone = String(customer.phone || '').trim();
+        const address = String(customer.address || '').trim();
+        const destinationId = String(body.destination?.id || '');
+        const destinationLabel = String(body.destination?.label || '').trim();
+        if (name.length < 2 || name.length > 100 || !/^[+0-9() .-]{8,24}$/.test(phone) || address.length < 8 || address.length > 500) {
+          return json({ error: 'Nama, nomor WhatsApp, atau alamat belum valid.' }, 400, origin);
+        }
+        if (!/^\d{1,12}$/.test(destinationId) || !destinationLabel || destinationLabel.length > 200) {
+          return json({ error: 'Lokasi tujuan pesanan tidak valid.' }, 400, origin);
+        }
+        if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 12) {
+          return json({ error: 'Daftar produk pesanan tidak valid.' }, 400, origin);
+        }
+        let units = 0;
+        const items = [];
+        for (const item of body.items) {
+          if (!PRODUCT_IDS.has(item?.id) || !Number.isInteger(item?.quantity) || item.quantity < 1 || item.quantity > 20) {
+            return json({ error: 'Produk atau jumlah pesanan tidak valid.' }, 400, origin);
+          }
+          units += item.quantity;
+          items.push({ id: item.id, name: PRODUCTS[item.id].name, quantity: item.quantity, unitPrice: PRODUCTS[item.id].price });
+        }
+        if (units > 40) return json({ error: 'Jumlah maksimal 40 produk per pesanan.' }, 400, origin);
+        const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+        const selectedShipping = body.shipping || {};
+        const courierCode = String(selectedShipping.code || '').trim().toLowerCase();
+        const courierName = String(selectedShipping.name || '').trim();
+        const service = String(selectedShipping.service || selectedShipping.description || '').trim();
+        const shippingCost = Number(selectedShipping.cost);
+        if (!COURIER_CODES.split(':').includes(courierCode) || !courierName || courierName.length > 80 || !service || service.length > 120 || !Number.isSafeInteger(shippingCost) || shippingCost < 0 || shippingCost > 2000000) {
+          return json({ error: 'Pilihan ekspedisi atau tarif ongkir tidak valid.' }, 400, origin);
+        }
+        const now = new Date();
+        const dateCode = now.toISOString().slice(0, 10).replaceAll('-', '');
+        const paymentCode = `PNA-${dateCode}-${crypto.randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+        const order = {
+          clientRequestId: body.clientRequestId,
+          orderId: crypto.randomUUID(),
+          paymentCode,
+          createdAt: now.toISOString(),
+          customer: { name, phone, address },
+          destination: { id: destinationId, label: destinationLabel },
+          items,
+          subtotal,
+          shipping: { code: courierCode, name: courierName, service, cost: shippingCost },
+          total: subtotal + shippingCost,
+          paymentStatus: 'MENUNGGU_PEMBAYARAN',
+          orderStatus: 'MENUNGGU_PEMBAYARAN'
+        };
+        const response = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: env.GOOGLE_SCRIPT_TOKEN, action: 'createOrder', order })
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result?.ok || !result.order) {
+          return json({ error: result?.error || 'Pesanan belum berhasil disimpan. Coba lagi beberapa saat.' }, 502, origin);
+        }
+        return json({ ok: true, order: result.order }, 201, origin);
+      }
+
       if (url.pathname === '/api/destinations' && request.method === 'GET') {
+        if (!env.RAJAONGKIR_API_KEY) return json({ error: 'API ongkir belum dikonfigurasi.' }, 503, origin);
         const search = (url.searchParams.get('search') || '').trim();
         if (search.length < 3 || search.length > 80) return json({ error: 'Masukkan minimal 3 karakter lokasi.' }, 400, origin);
         const query = new URLSearchParams({ search, limit: '10', offset: '0' });
@@ -57,6 +146,7 @@ export default {
       }
 
       if (url.pathname === '/api/shipping-cost' && request.method === 'POST') {
+        if (!env.RAJAONGKIR_API_KEY) return json({ error: 'API ongkir belum dikonfigurasi.' }, 503, origin);
         const contentLength = Number(request.headers.get('Content-Length') || 0);
         if (contentLength > 8192) return json({ error: 'Data keranjang terlalu besar.' }, 413, origin);
         const body = await request.json().catch(() => null);
@@ -89,11 +179,9 @@ export default {
         return json({ weightGrams: units * GRAMS_PER_PRODUCT, data: Array.isArray(result.data) ? result.data : [] }, 200, origin);
       }
 
-      if (url.pathname === '/health' && request.method === 'GET') return json({ ok: true }, 200, origin);
       return json({ error: 'Endpoint tidak ditemukan.' }, 404, origin);
     } catch (error) {
       return json({ error: error instanceof Error ? error.message : 'Layanan ongkir gagal dihubungi.' }, 502, origin);
     }
   }
 };
-
