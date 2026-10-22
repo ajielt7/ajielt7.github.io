@@ -15,11 +15,11 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 
 | ID | Kebutuhan | Kriteria penerimaan |
 | --- | --- | --- |
-| FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Halaman menampilkan 12 pilihan produk dan keranjang checkout di sisi katalog pada layar lebar. Checkout memuat kontak, alamat, titik peta, metode kirim, dan subtotal produk. Detail tulisan/desain produk ditunda; nama, ukuran, dan harga pada 12 kartu masih contoh prototipe. |
+| FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Halaman menampilkan 12 pilihan produk dan keranjang checkout di sisi katalog pada layar lebar. Checkout memuat kontak, alamat tertulis, pencarian tujuan ekspedisi, dan subtotal produk. Detail tulisan/desain produk ditunda; nama, ukuran, dan harga pada 12 kartu masih contoh prototipe. |
 | FR-02 | Pemilihan titik rumah pada peta. | Ditunda sementara; checkout saat ini hanya meminta alamat tertulis dan tidak mengumpulkan koordinat. |
-| FR-03 | Penentuan opsi pengiriman berdasarkan jarak dari Cimekar, Cileunyi. | Ditunda sampai fitur titik lokasi kembali tersedia; metode kirim dan ongkir untuk prototipe ini dikonfirmasi manual. |
+| FR-03 | Pelanggan memilih tujuan ekspedisi dan melihat ongkir. | Form kontak/alamat menyediakan pencarian lokasi RajaOngkir dan tombol hitung JNE/J&T. Titik pin masih ditunda; ongkir ojol dikonfirmasi terpisah. |
 | FR-04 | Perhitungan ongkir ojol. | Rumus bisnis: 4 km pertama Rp10.000, setiap km setelahnya Rp2.500, jarak pecahan dibulatkan ke atas. Kalkulasi UI sementara dinonaktifkan bersama fitur titik lokasi. |
-| FR-05 | Sistem memperoleh ongkir ekspedisi. | Ongkir dihitung menggunakan API RajaOngkir untuk layanan ekspedisi seperti JNE/J&T. Detail produk/API dan ketersediaan layanan perlu diverifikasi sebelum implementasi. |
+| FR-05 | Sistem memperoleh ongkir ekspedisi. | Worker menghitung tarif JNE/J&T melalui RajaOngkir API V2 setelah pelanggan memilih tujuan dan produk. Bobot prototipe 500 gram per item; perlu diganti bobot aktual sebelum dipakai untuk transaksi nyata. |
 | FR-06 | Checkout menampilkan kode referensi pembayaran otomatis. | Kode dibuat unik oleh backend, ditampilkan dengan instruksi yang jelas, dan dikaitkan dengan pesanan. Pelanggan mencantumkan kode pada deskripsi transfer. |
 | FR-07 | Pelanggan dapat mengunggah screenshot bukti transfer. | File disimpan di Google Drive dengan akses terkendali; Sheet mencatat referensi file dan status bukti. Tipe serta batas ukuran file perlu ditentukan. |
 | FR-08 | Admin memeriksa dan menyetujui pembayaran manual. | Dashboard menampilkan detail pesanan, kode pembayaran, bukti, dan informasi yang diperlukan untuk pencocokan dengan mutasi bank. Admin mengubah status melalui tombol ACC. |
