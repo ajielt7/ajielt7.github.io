@@ -34,12 +34,15 @@
   let quoteTimer = null;
   let quoteController = null;
   let quoteRequestId = 0;
+  let orderRequestId = null;
+  let isSubmittingOrder = false;
 
   const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
   }).format(amount);
 
   function renderCart() {
+    orderRequestId = null;
     clearTimeout(quoteTimer);
     if (quoteController) quoteController.abort();
     quoteRequestId += 1;
@@ -114,6 +117,7 @@ function scheduleShippingQuote() {
         option.setAttribute('role', 'option'); option.textContent = destinationLabel(location);
         option.addEventListener('click', () => {
           selectedDestination = { id: String(location.id), label: destinationLabel(location) };
+          orderRequestId = null;
           if (quoteController) quoteController.abort();
           quoteRequestId += 1;
           document.querySelector('#destination-search').value = selectedDestination.label;
@@ -198,6 +202,7 @@ function scheduleShippingQuote() {
           label.classList.toggle('selected', radio.checked);
           radio.addEventListener('change', () => {
             selectedRate = option;
+            orderRequestId = null;
             services.querySelectorAll('.shipping-rate-option').forEach((rateLabel) => rateLabel.classList.remove('selected'));
             label.classList.add('selected');
             pickerPrice.textContent = `${option.service || option.description || option.name || option.code} - ${formatRupiah(Number(option.cost))}`;
@@ -212,6 +217,7 @@ function scheduleShippingQuote() {
         }));
       };
       const chooseCourier = (courier, revealServices = true) => {
+        orderRequestId = null;
         selectedRate = courier.options[0];
         const isCheapest = courier === cheapestCourier;
         pickerName.textContent = courier.name;
@@ -280,7 +286,7 @@ function scheduleShippingQuote() {
     status.classList.toggle('error', isError);
   }
 
-  function showSummary(data) {
+  function showSummary(data, savedOrder) {
     const cartDescription = [...cart.entries()].map(([id, quantity]) =>
       `${products[id].name} � ${quantity} � ${formatRupiah(products[id].price * quantity)}`
     ).join('; ');
@@ -294,7 +300,9 @@ function scheduleShippingQuote() {
       ['Lokasi tujuan', selectedDestination.label],
       ['Pengiriman', `${selectedRate.name || selectedRate.code} ${selectedRate.service || ''}`.trim()],
       ['Ongkir', formatRupiah(Number(selectedRate.cost))],
-      ['Total sementara', formatRupiah(subtotal + Number(selectedRate.cost))]
+      ['Kode pembayaran', savedOrder.paymentCode],
+      ['Total transfer', formatRupiah(Number(savedOrder.total))],
+      ['Status', 'Menunggu pembayaran']
     ];
     const summary = document.querySelector('#summary-content');
     summary.replaceChildren(...rows.map(([label, value]) => {
@@ -303,6 +311,8 @@ function scheduleShippingQuote() {
       const val = document.createElement('span'); val.textContent = value;
       row.append(key, val); return row;
     }));
+    const warning = document.querySelector('.summary-warning');
+    warning.textContent = `Pesanan sudah disimpan. Cantumkan kode ${savedOrder.paymentCode} pada deskripsi transfer. Informasi rekening dan upload bukti akan ditambahkan pada tahap pembayaran berikutnya.`;
     dialogBackdrop.hidden = false;
     summaryDialog.showModal();
   }
@@ -328,7 +338,8 @@ function scheduleShippingQuote() {
     clearTimeout(searchTimer);
     if (search.length >= 3) searchTimer = setTimeout(() => searchDestinations(search), 350);
   });
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('input', () => { if (!isSubmittingOrder) orderRequestId = null; });
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     setStatus('');
     if (!form.reportValidity()) return;
@@ -347,7 +358,47 @@ function scheduleShippingQuote() {
       document.querySelector('#shipping-rates').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    showSummary(new FormData(form));
+    if (isSubmittingOrder) return;
+    isSubmittingOrder = true;
+    const submitButton = form.querySelector('.submit-button');
+    submitButton.disabled = true;
+    const originalButtonText = submitButton.textContent;
+    submitButton.textContent = 'Menyimpan pesanan...';
+    setStatus('Menyimpan pesanan ke database...');
+    if (!orderRequestId) orderRequestId = crypto.randomUUID();
+    try {
+      const response = await fetch(`${API_BASE}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientRequestId: orderRequestId,
+          customer: {
+            name: form.elements.customerName.value.trim(),
+            phone: form.elements.phone.value.trim(),
+            address: form.elements.address.value.trim()
+          },
+          destination: selectedDestination,
+          items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })),
+          shipping: {
+            code: selectedRate.code,
+            name: selectedRate.name,
+            service: selectedRate.service || selectedRate.description,
+            description: selectedRate.description,
+            cost: Number(selectedRate.cost)
+          }
+        })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok || !result.order) throw new Error(result.error || 'Pesanan belum berhasil disimpan.');
+      showSummary(new FormData(form), result.order);
+      setStatus(`Pesanan tersimpan. Kode pembayaran: ${result.order.paymentCode}`);
+    } catch (error) {
+      setStatus(error.message || 'Pesanan belum berhasil disimpan. Coba lagi.', true);
+    } finally {
+      isSubmittingOrder = false;
+      submitButton.disabled = false;
+      submitButton.innerHTML = `${originalButtonText} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
+    }
   });
   document.querySelector('#close-dialog').addEventListener('click', closeSummary);
   document.querySelector('#back-to-form').addEventListener('click', closeSummary);
