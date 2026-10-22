@@ -67,6 +67,15 @@ function validImageSignature(bytes, mime) {
   return false;
 }
 
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return btoa(binary);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -139,7 +148,7 @@ export default {
           orderStatus: 'MENUNGGU_PEMBAYARAN'
         };
         const result = await appsScript(env, 'createOrder', { order });
-        if (!response.ok || !result?.ok || !result.order) {
+        if (!result?.ok || !result.order) {
           return json({ error: result?.error || 'Pesanan belum berhasil disimpan. Coba lagi beberapa saat.' }, 502, origin);
         }
         return json({ ok: true, order: result.order }, 201, origin);
@@ -147,7 +156,6 @@ export default {
 
       if (url.pathname === '/api/orders/proof' && request.method === 'POST') {
         if (!env.GOOGLE_APPS_SCRIPT_URL || !env.GOOGLE_SCRIPT_TOKEN) return json({ error: 'Penyimpanan pesanan belum dikonfigurasi.' }, 503, origin);
-        if (!env.PAYMENT_PROOFS) return json({ error: 'Penyimpanan bukti belum dikonfigurasi.' }, 503, origin);
         const contentLength = Number(request.headers.get('Content-Length') || 0);
         if (contentLength > 5 * 1024 * 1024 + 32768) return json({ error: 'Ukuran gambar maksimal 5 MB.' }, 413, origin);
         const form = await request.formData();
@@ -164,20 +172,12 @@ export default {
         const bytes = new Uint8Array(await file.arrayBuffer());
         if (!extension || !validImageSignature(bytes, file.type)) return json({ error: 'Format bukti harus JPG, PNG, atau WebP yang valid.' }, 400, origin);
 
-        const authorization = await appsScript(env, 'authorizeProof', { orderId, paymentCode, phone });
-        if (!authorization?.ok || !authorization.authorized) return json({ error: authorization?.error || 'Pesanan tidak ditemukan atau bukti sudah pernah diunggah.' }, 403, origin);
-        const uploadedAt = new Date().toISOString();
-        const key = `payment-proofs/${orderId}/${crypto.randomUUID()}.${extension}`;
-        await env.PAYMENT_PROOFS.put(key, bytes, {
-          httpMetadata: { contentType: file.type, cacheControl: 'private, no-store' },
-          customMetadata: { orderId, uploadedAt }
+        const result = await appsScript(env, 'uploadProof', {
+          orderId, paymentCode, phone, mimeType: file.type, extension,
+          imageBase64: bytesToBase64(bytes)
         });
-        const saved = await appsScript(env, 'attachProof', { orderId, paymentCode, phone, fileKey: key, uploadedAt });
-        if (!saved?.ok) {
-          await env.PAYMENT_PROOFS.delete(key);
-          return json({ error: saved?.error || 'Bukti gagal dicatat pada pesanan.' }, 409, origin);
-        }
-        return json({ ok: true, message: 'Bukti pembayaran berhasil diunggah.' }, 201, origin);
+        if (!result?.ok) return json({ error: result?.error || 'Bukti gagal disimpan ke Google Drive.' }, 409, origin);
+        return json({ ok: true, message: 'Bukti pembayaran berhasil disimpan ke Google Drive.' }, 201, origin);
       }
 
       if (url.pathname === '/api/destinations' && request.method === 'GET') {
@@ -231,3 +231,4 @@ export default {
     }
   }
 };
+
