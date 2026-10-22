@@ -168,20 +168,45 @@
         })
         .sort((a, b) => Number(a.cost) - Number(b.cost));
       if (!options.length) throw new Error('Belum ada layanan ekspedisi untuk alamat ini.');
-      selectedRate = options[0];
-      const groups = [
-        { key: 'regular', label: 'Reguler' },
-        { key: 'cargo', label: 'Kargo' }
-      ];
-      groups.forEach(({ key, label: groupLabel }) => {
-        const groupOptions = options.filter((option) => option.shippingCategory === key);
-        if (!groupOptions.length) return;
-        const heading = document.createElement('h4'); heading.className = 'shipping-rate-group-title'; heading.textContent = groupLabel;
-        rates.append(heading);
-        groupOptions.forEach((option) => {
-          const index = options.indexOf(option);
+      const courierMap = new Map();
+      options.forEach((option) => {
+        const key = String(option.code || option.name || 'kurir').trim().toLocaleLowerCase('id-ID');
+        if (!courierMap.has(key)) courierMap.set(key, { key, name: option.name || option.code || 'Kurir', options: [] });
+        courierMap.get(key).options.push(option);
+      });
+      const couriers = [...courierMap.values()]
+        .map((courier) => ({ ...courier, options: courier.options.sort((a, b) => Number(a.cost) - Number(b.cost)) }))
+        .sort((a, b) => Number(a.options[0].cost) - Number(b.options[0].cost));
+      selectedRate = couriers[0].options[0];
+      couriers.forEach((courier, courierIndex) => {
+        const group = document.createElement('details'); group.className = 'shipping-courier-group'; group.open = courierIndex === 0;
+        const summary = document.createElement('summary'); summary.className = 'shipping-courier-summary';
+        const courierName = document.createElement('strong'); courierName.textContent = courier.name;
+        const courierLowest = document.createElement('span'); courierLowest.className = 'shipping-courier-lowest';
+        courierLowest.textContent = `Mulai ${formatRupiah(Number(courier.options[0].cost))}`;
+        summary.append(courierName, courierLowest);
+        if (courierIndex === 0) {
+          const badge = document.createElement('small'); badge.className = 'shipping-cheapest-badge'; badge.textContent = 'Termurah';
+          summary.append(badge);
+        }
+        group.append(summary);
+        group.addEventListener('toggle', () => {
+          if (!group.open) return;
+          rates.querySelectorAll('.shipping-courier-group').forEach((other) => { if (other !== group) other.open = false; });
+          if (!courier.options.includes(selectedRate)) {
+            selectedRate = courier.options[0];
+            rates.querySelectorAll('.shipping-rate-option').forEach((rateLabel) => rateLabel.classList.remove('selected'));
+            const cheapestRadio = group.querySelector('input[name="shippingRate"]');
+            if (cheapestRadio) {
+              cheapestRadio.checked = true;
+              cheapestRadio.closest('.shipping-rate-option').classList.add('selected');
+            }
+            setStatus(`Opsi termurah ${courier.name} dipilih. Anda bisa mengganti layanannya di bawah.`);
+          }
+        });
+        courier.options.forEach((option, serviceIndex) => {
           const label = document.createElement('label'); label.className = 'shipping-rate-option';
-          const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.required = true;
+          const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = `${courier.key}-${serviceIndex}`; radio.required = true;
           radio.checked = option === selectedRate;
           label.classList.toggle('selected', radio.checked);
           radio.addEventListener('change', () => {
@@ -190,11 +215,12 @@
             label.classList.add('selected');
           });
           const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-          const title = document.createElement('strong'); title.textContent = `${option.name || option.code} ${option.service || ''}`.trim();
-          const detail = document.createElement('small'); detail.textContent = [option === selectedRate ? 'Opsi termurah' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
+          const title = document.createElement('strong'); title.textContent = `${option.service || option.description || option.name || option.code}${option.shippingCategory === 'cargo' ? ' · Kargo' : ''}`;
+          const detail = document.createElement('small'); detail.textContent = [serviceIndex === 0 ? 'Layanan termurah kurir ini' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
           const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
-          copy.append(title, detail); label.append(radio, copy, price); rates.append(label);
+          copy.append(title, detail); label.append(radio, copy, price); group.append(label);
         });
+        rates.append(group);
       });
       const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
       weightNote.textContent = `Pilihan termurah dipilih otomatis. Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram. Ketersediaan layanan kargo mengikuti rute dan hasil RajaOngkir.`;
