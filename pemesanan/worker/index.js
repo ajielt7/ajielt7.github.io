@@ -9,6 +9,7 @@ const PRODUCT_IDS = new Set([
   'akrilik-silver', 'nomor-timbul', 'nomor-dobel', 'nomor-led', 'nomor-jalan', 'nomor-keluarga'
 ]);
 const GRAMS_PER_PRODUCT = 500; // Bobot kemasan contoh sementara, dipilih untuk prototipe.
+const COURIER_CODES = 'jne:sicepat:ide:sap:ninja:jnt:tiki:wahana:pos:sentral:lion:rex:spx';
 // ID asal hasil verifikasi RajaOngkir: Cimekar, Cileunyi, Bandung (40623).
 const ORIGIN_DESTINATION_ID = 5052;
 const DESTINATION_CACHE_SECONDS = 60 * 60 * 24 * 30;
@@ -77,7 +78,7 @@ export default {
           origin: String(ORIGIN_DESTINATION_ID),
           destination: String(body.destinationId),
           weight: String(units * GRAMS_PER_PRODUCT),
-          courier: 'jne:jnt',
+          courier: COURIER_CODES,
           price: 'lowest'
         });
         const result = await rajaOngkir('/calculate/domestic-cost', {
