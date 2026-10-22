@@ -11,18 +11,17 @@ Urutan ini memprioritaskan alur pesanan yang dapat diuji dari ujung ke ujung. Ta
 
 ## Tahap 1 — Prototipe frontend dan ongkir
 
-- [x] Buat formulir produk, kontak, alamat, pin peta Leaflet, pilihan pengiriman, dan pratinjau checkout.
-- [x] Implementasikan perhitungan ojol dengan aturan jarak <40 km dan pembulatan ke atas pada prototipe frontend.
-- [x] Hubungkan estimasi rute ke OSRM demo dan tampilkan kegagalan rute dengan jelas.
-- [ ] Ganti koordinat asal sementara dengan pin usaha yang akurat.
-- [ ] Uji rute pada beberapa alamat dan tinjau hasilnya di ponsel/desktop.
+- [x] Buat formulir produk, kontak/alamat, dan keranjang checkout.
+- [ ] Sambungkan kembali peta, perhitungan ojol, serta estimasi OSRM setelah alur ongkir ekspedisi stabil.
+- [ ] Tinjau katalog dan alur checkout di ponsel/desktop.
 - **Selesai jika:** alur dapat dicoba di ponsel/desktop dan opsi/ongkir sesuai kasus uji yang disepakati.
 
 ## Tahap 2 — Backend dan pencatatan pesanan
 
-- Buat Cloudflare Worker API dan validasi server-side.
+- [x] Buat Cloudflare Worker API `pemesanan-api` dan validasi input.
 - Buat order ID/kode referensi pembayaran unik.
-- Hubungkan penyimpanan Google Sheets serta perhitungan RajaOngkir.
+- Hubungkan penyimpanan Google Sheets.
+- [x] Hubungkan pencarian tujuan dan kalkulasi ongkir RajaOngkir JNE/J&T (bobot contoh 500 gram/item; respons live perlu dikonfirmasi).
 - **Selesai jika:** pesanan dan totalnya tersimpan konsisten, kode checkout dapat dicari, serta request tidak valid ditolak.
 
 ## Tahap 3 — Transfer manual dan bukti pembayaran
@@ -52,3 +51,4 @@ Frontend ditempatkan di subfolder `pemesanan/` pada repository Pages `ajielt7/aj
 ## Prioritas MVP
 
 MVP adalah satu usaha dan satu tipe produk, tanpa akun pelanggan, tanpa payment gateway, serta verifikasi transfer oleh admin. Integrasi WhatsApp otomatis boleh masuk tahap rilis setelah akses/biaya API dipastikan; kebutuhan akhirnya tetap otomatis setelah ACC.
+
