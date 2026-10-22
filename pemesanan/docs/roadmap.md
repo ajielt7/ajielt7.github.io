@@ -19,8 +19,9 @@ Urutan ini memprioritaskan alur pesanan yang dapat diuji dari ujung ke ujung. Ta
 ## Tahap 2 — Backend dan pencatatan pesanan
 
 - [x] Buat Cloudflare Worker API `pemesanan-api` dan validasi input.
-- Buat order ID/kode referensi pembayaran unik.
-- Hubungkan penyimpanan Google Sheets.
+- [x] Buat endpoint order dan generator kode referensi pembayaran.
+- [x] Siapkan adapter Apps Script untuk menyimpan order ke Google Sheets.
+- [ ] Pasang Apps Script dan isi secret/properti Google/Cloudflare.
 - [x] Hubungkan pencarian tujuan dan kalkulasi ongkir RajaOngkir JNE/J&T (bobot contoh 500 gram/item; respons live perlu dikonfirmasi).
 - **Selesai jika:** pesanan dan totalnya tersimpan konsisten, kode checkout dapat dicari, serta request tidak valid ditolak.
 
@@ -51,4 +52,3 @@ Frontend ditempatkan di subfolder `pemesanan/` pada repository Pages `ajielt7/aj
 ## Prioritas MVP
 
 MVP adalah satu usaha dan satu tipe produk, tanpa akun pelanggan, tanpa payment gateway, serta verifikasi transfer oleh admin. Integrasi WhatsApp otomatis boleh masuk tahap rilis setelah akses/biaya API dipastikan; kebutuhan akhirnya tetap otomatis setelah ACC.
-
