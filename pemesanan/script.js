@@ -237,7 +237,7 @@
         moreSummary.textContent = `Lihat kurir lainnya (${otherCouriers.length})`;
         more.append(moreSummary, ...otherCouriers.map((courier) => renderCourierGroup(courier)));
         rates.append(more);
-      });
+      }
       const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
       weightNote.textContent = `Pilihan termurah dipilih otomatis. Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram. Ketersediaan layanan kargo mengikuti rute dan hasil RajaOngkir.`;
       rates.append(weightNote);
