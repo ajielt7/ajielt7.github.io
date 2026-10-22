@@ -51,6 +51,22 @@ async function rajaOngkir(path, init, apiKey) {
   return payload;
 }
 
+async function appsScript(env, action, data) {
+  const response = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: env.GOOGLE_SCRIPT_TOKEN, action, ...data })
+  });
+  return response.json().catch(() => null);
+}
+
+function validImageSignature(bytes, mime) {
+  if (mime === 'image/png') return bytes.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value);
+  if (mime === 'image/jpeg') return bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+  if (mime === 'image/webp') return bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP';
+  return false;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -122,16 +138,46 @@ export default {
           paymentStatus: 'MENUNGGU_PEMBAYARAN',
           orderStatus: 'MENUNGGU_PEMBAYARAN'
         };
-        const response = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: env.GOOGLE_SCRIPT_TOKEN, action: 'createOrder', order })
-        });
-        const result = await response.json().catch(() => null);
+        const result = await appsScript(env, 'createOrder', { order });
         if (!response.ok || !result?.ok || !result.order) {
           return json({ error: result?.error || 'Pesanan belum berhasil disimpan. Coba lagi beberapa saat.' }, 502, origin);
         }
         return json({ ok: true, order: result.order }, 201, origin);
+      }
+
+      if (url.pathname === '/api/orders/proof' && request.method === 'POST') {
+        if (!env.GOOGLE_APPS_SCRIPT_URL || !env.GOOGLE_SCRIPT_TOKEN) return json({ error: 'Penyimpanan pesanan belum dikonfigurasi.' }, 503, origin);
+        if (!env.PAYMENT_PROOFS) return json({ error: 'Penyimpanan bukti belum dikonfigurasi.' }, 503, origin);
+        const contentLength = Number(request.headers.get('Content-Length') || 0);
+        if (contentLength > 5 * 1024 * 1024 + 32768) return json({ error: 'Ukuran gambar maksimal 5 MB.' }, 413, origin);
+        const form = await request.formData();
+        const orderId = String(form.get('orderId') || '');
+        const paymentCode = String(form.get('paymentCode') || '').trim();
+        const phone = String(form.get('phone') || '').trim();
+        const file = form.get('proof');
+        if (!/^[0-9a-f-]{36}$/i.test(orderId) || !/^PNA-\d{8}-[A-F0-9]{8}$/.test(paymentCode) || !/^[+0-9() .-]{8,24}$/.test(phone)) {
+          return json({ error: 'Data pesanan untuk unggah bukti tidak valid.' }, 400, origin);
+        }
+        if (!(file instanceof File) || file.size < 1 || file.size > 5 * 1024 * 1024) return json({ error: 'Pilih gambar maksimal 5 MB.' }, 400, origin);
+        const allowedTypes = new Map([['image/jpeg', 'jpg'], ['image/png', 'png'], ['image/webp', 'webp']]);
+        const extension = allowedTypes.get(file.type);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (!extension || !validImageSignature(bytes, file.type)) return json({ error: 'Format bukti harus JPG, PNG, atau WebP yang valid.' }, 400, origin);
+
+        const authorization = await appsScript(env, 'authorizeProof', { orderId, paymentCode, phone });
+        if (!authorization?.ok || !authorization.authorized) return json({ error: authorization?.error || 'Pesanan tidak ditemukan atau bukti sudah pernah diunggah.' }, 403, origin);
+        const uploadedAt = new Date().toISOString();
+        const key = `payment-proofs/${orderId}/${crypto.randomUUID()}.${extension}`;
+        await env.PAYMENT_PROOFS.put(key, bytes, {
+          httpMetadata: { contentType: file.type, cacheControl: 'private, no-store' },
+          customMetadata: { orderId, uploadedAt }
+        });
+        const saved = await appsScript(env, 'attachProof', { orderId, paymentCode, phone, fileKey: key, uploadedAt });
+        if (!saved?.ok) {
+          await env.PAYMENT_PROOFS.delete(key);
+          return json({ error: saved?.error || 'Bukti gagal dicatat pada pesanan.' }, 409, origin);
+        }
+        return json({ ok: true, message: 'Bukti pembayaran berhasil diunggah.' }, 201, origin);
       }
 
       if (url.pathname === '/api/destinations' && request.method === 'GET') {
@@ -181,7 +227,7 @@ export default {
 
       return json({ error: 'Endpoint tidak ditemukan.' }, 404, origin);
     } catch (error) {
-      return json({ error: error instanceof Error ? error.message : 'Layanan ongkir gagal dihubungi.' }, 502, origin);
+      return json({ error: error instanceof Error ? error.message : 'Permintaan backend gagal diproses.' }, 502, origin);
     }
   }
 };
