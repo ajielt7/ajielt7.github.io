@@ -4,18 +4,18 @@
   const summaryDialog = document.querySelector('#summary-dialog');
   const dialogBackdrop = document.querySelector('#dialog-backdrop');
   const productList = [
-    ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 × 10 cm', 'PALING DIMINATI'],
-    ['premium', 'Nomor Rumah Premium', 120000, '30 × 15 cm', 'UKURAN BESAR'],
+    ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 � 10 cm', 'PALING DIMINATI'],
+    ['premium', 'Nomor Rumah Premium', 120000, '30 � 15 cm', 'UKURAN BESAR'],
     ['custom', 'Nomor Rumah Custom', 150000, 'Ukuran sesuai pesanan', 'BEBAS CUSTOM'],
-    ['akrilik-hitam', 'Akrilik Hitam Elegan', 85000, '20 × 10 cm', 'WARNA HITAM'],
-    ['akrilik-putih', 'Akrilik Putih Minimal', 85000, '20 × 10 cm', 'WARNA PUTIH'],
-    ['akrilik-emas', 'Akrilik Nuansa Emas', 95000, '20 × 10 cm', 'AKSEN EMAS'],
-    ['akrilik-silver', 'Akrilik Silver Modern', 95000, '20 × 10 cm', 'AKSEN SILVER'],
-    ['nomor-timbul', 'Nomor Timbul 3D', 135000, '30 × 15 cm', 'MODEL TIMBUL'],
-    ['nomor-dobel', 'Nomor Lapis Ganda', 165000, '30 × 15 cm', 'DUA LAPIS'],
-    ['nomor-led', 'Nomor Rumah LED', 250000, '30 × 15 cm', 'DENGAN LAMPU'],
-    ['nomor-jalan', 'Nomor + Nama Jalan', 185000, '30 × 15 cm', 'PAKET LENGKAP'],
-    ['nomor-keluarga', 'Nomor + Nama Keluarga', 175000, '30 × 15 cm', 'PERSONAL']
+    ['akrilik-hitam', 'Akrilik Hitam Elegan', 85000, '20 � 10 cm', 'WARNA HITAM'],
+    ['akrilik-putih', 'Akrilik Putih Minimal', 85000, '20 � 10 cm', 'WARNA PUTIH'],
+    ['akrilik-emas', 'Akrilik Nuansa Emas', 95000, '20 � 10 cm', 'AKSEN EMAS'],
+    ['akrilik-silver', 'Akrilik Silver Modern', 95000, '20 � 10 cm', 'AKSEN SILVER'],
+    ['nomor-timbul', 'Nomor Timbul 3D', 135000, '30 � 15 cm', 'MODEL TIMBUL'],
+    ['nomor-dobel', 'Nomor Lapis Ganda', 165000, '30 � 15 cm', 'DUA LAPIS'],
+    ['nomor-led', 'Nomor Rumah LED', 250000, '30 � 15 cm', 'DENGAN LAMPU'],
+    ['nomor-jalan', 'Nomor + Nama Jalan', 185000, '30 � 15 cm', 'PAKET LENGKAP'],
+    ['nomor-keluarga', 'Nomor + Nama Keluarga', 175000, '30 � 15 cm', 'PERSONAL']
   ].map(([id, name, price, size, badge], index) => ({
     id, name, price, size, badge,
     image: [
@@ -50,7 +50,7 @@
     if (!entries.length) {
       const empty = document.createElement('p');
       empty.className = 'cart-empty';
-      empty.innerHTML = 'Belum ada produk dipilih.<br>Klik tombol “Pilih” pada produk.';
+      empty.innerHTML = 'Belum ada produk dipilih.<br>Klik tombol �Pilih� pada produk.';
       list.replaceChildren(empty);
     } else {
       list.replaceChildren(...entries.map(([id, quantity]) => {
@@ -61,7 +61,7 @@
         const price = document.createElement('span'); price.className = 'cart-line-price';
         price.textContent = formatRupiah(product.price * quantity);
         const controls = document.createElement('div'); controls.className = 'cart-line-controls';
-        const minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '−';
+        const minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '-';
         minus.setAttribute('aria-label', `Kurangi ${product.name}`);
         minus.addEventListener('click', () => { quantity <= 1 ? cart.delete(id) : cart.set(id, quantity - 1); renderCart(); });
         const count = document.createElement('span'); count.textContent = quantity;
@@ -92,7 +92,7 @@
       if (quoteController) quoteController.abort();
       return;
     }
-    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir…');
+    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir�');
     quoteTimer = setTimeout(calculateShipping, 700);
   }
 
@@ -148,7 +148,7 @@
     const button = document.querySelector('#shipping-quote-button');
     const rates = document.querySelector('#shipping-rates');
     button.disabled = true;
-    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Menghitung ongkir…';
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Menghitung ongkir�';
     selectedRate = null;
     rates.replaceChildren();
     try {
@@ -178,15 +178,23 @@
         .map((courier) => ({ ...courier, options: courier.options.sort((a, b) => Number(a.cost) - Number(b.cost)) }))
         .sort((a, b) => Number(a.options[0].cost) - Number(b.options[0].cost));
       selectedRate = couriers[0].options[0];
-      couriers.forEach((courier, courierIndex) => {
-        const group = document.createElement('details'); group.className = 'shipping-courier-group'; group.open = courierIndex === 0;
+      const cheapestCourier = couriers[0];
+      const regularAlternatives = couriers.filter((courier) => courier !== cheapestCourier && courier.options.some((option) => option.shippingCategory === 'regular')).slice(0, 2);
+      const cargoAlternative = couriers.find((courier) => courier !== cheapestCourier && courier.options.some((option) => option.shippingCategory === 'cargo'));
+      const featuredCouriers = [...new Set([cheapestCourier, ...regularAlternatives, cargoAlternative].filter(Boolean))]
+        .sort((a, b) => Number(a.options[0].cost) - Number(b.options[0].cost));
+      const otherCouriers = couriers.filter((courier) => !featuredCouriers.includes(courier));
+      const renderCourierGroup = (courier, initiallyOpen = false) => {
+        const group = document.createElement('details'); group.className = 'shipping-courier-group'; group.open = initiallyOpen;
         const summary = document.createElement('summary'); summary.className = 'shipping-courier-summary';
         const courierName = document.createElement('strong'); courierName.textContent = courier.name;
         const courierLowest = document.createElement('span'); courierLowest.className = 'shipping-courier-lowest';
         courierLowest.textContent = `Mulai ${formatRupiah(Number(courier.options[0].cost))}`;
         summary.append(courierName, courierLowest);
-        if (courierIndex === 0) {
-          const badge = document.createElement('small'); badge.className = 'shipping-cheapest-badge'; badge.textContent = 'Termurah';
+        const hasCargo = courier.options.some((option) => option.shippingCategory === 'cargo');
+        if (courier === cheapestCourier || hasCargo) {
+          const badge = document.createElement('small'); badge.className = 'shipping-cheapest-badge';
+          badge.textContent = courier === cheapestCourier ? 'Termurah' : 'Kargo tersedia';
           summary.append(badge);
         }
         group.append(summary);
@@ -215,12 +223,20 @@
             label.classList.add('selected');
           });
           const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-          const title = document.createElement('strong'); title.textContent = `${option.service || option.description || option.name || option.code}${option.shippingCategory === 'cargo' ? ' · Kargo' : ''}`;
-          const detail = document.createElement('small'); detail.textContent = [serviceIndex === 0 ? 'Layanan termurah kurir ini' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' · ');
+          const title = document.createElement('strong'); title.textContent = `${option.service || option.description || option.name || option.code}${option.shippingCategory === 'cargo' ? ' � Kargo' : ''}`;
+          const detail = document.createElement('small'); detail.textContent = [serviceIndex === 0 ? 'Layanan termurah kurir ini' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' � ');
           const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
           copy.append(title, detail); label.append(radio, copy, price); group.append(label);
         });
-        rates.append(group);
+        return group;
+      };
+      featuredCouriers.forEach((courier) => rates.append(renderCourierGroup(courier, courier === cheapestCourier)));
+      if (otherCouriers.length) {
+        const more = document.createElement('details'); more.className = 'shipping-more-couriers';
+        const moreSummary = document.createElement('summary');
+        moreSummary.textContent = `Lihat kurir lainnya (${otherCouriers.length})`;
+        more.append(moreSummary, ...otherCouriers.map((courier) => renderCourierGroup(courier)));
+        rates.append(more);
       });
       const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
       weightNote.textContent = `Pilihan termurah dipilih otomatis. Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram. Ketersediaan layanan kargo mengikuti rute dan hasil RajaOngkir.`;
@@ -267,7 +283,7 @@
 
   function showSummary(data) {
     const cartDescription = [...cart.entries()].map(([id, quantity]) =>
-      `${products[id].name} × ${quantity} — ${formatRupiah(products[id].price * quantity)}`
+      `${products[id].name} � ${quantity} � ${formatRupiah(products[id].price * quantity)}`
     ).join('; ');
     const subtotal = [...cart.entries()].reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     const rows = [
@@ -342,4 +358,3 @@
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
 })();
-
