@@ -5,7 +5,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Status saat ini
 
 - **Fase:** prototipe frontend (Tahap 1 roadmap).
-- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, estimasi ekspedisi otomatis, dan pratinjau lokal. Worker `pemesanan-api` memakai secret RajaOngkir di Cloudflare. Hasil pencarian tujuan disimpan sebagai respons JSON pada Workers Cache selama 30 hari; hasil kosong 5 menit. ID asal 5052 dicatat di `data/rajaongkir-reference.json`, sehingga pencarian asal tidak berulang untuk tiap hitung tarif. Setelah lokasi dipilih dan keranjang berisi produk, tarif beberapa ekspedisi diminta sekali. Dropdown kurir diurutkan dari harga termurah, kurir teratas terbuka dan layanannya tersusun termurah dahulu; membuka kurir lain memilih layanan termurah di kelompok itu. Layanan kargo ditandai bila bisa dikenali pada respons RajaOngkir. Bobot masih contoh 500 gram per item. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
+- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, estimasi ekspedisi otomatis, dan pratinjau lokal. Worker `pemesanan-api` memakai secret RajaOngkir di Cloudflare. Hasil pencarian tujuan disimpan sebagai respons JSON pada Workers Cache selama 30 hari; hasil kosong 5 menit. ID asal 5052 dicatat di `data/rajaongkir-reference.json`, sehingga pencarian asal tidak berulang untuk tiap hitung tarif. Setelah lokasi dipilih dan keranjang berisi produk, tarif beberapa ekspedisi diminta sekali. Tampilan ongkir ringkas menampilkan kurir termurah, maksimal dua alternatif reguler, dan satu kurir dengan layanan kargo bila tersedia. Kurir lain berada di bagian kurir lainnya. Kurir termurah terbuka dan layanan tiap kurir diurutkan termurah dahulu; membuka kurir lain memilih layanan termurah di kelompok itu. Layanan kargo ditandai bila bisa dikenali pada respons RajaOngkir. Bobot masih contoh 500 gram per item. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
 - **Tahap berikutnya:** buka halaman checkout dari browser dan pastikan perhitungan otomatis, daftar ekspedisi, pemilihan tarif termurah, serta opsi kargo merespons sesuai rute/akun; lalu ganti bobot contoh dengan bobot produk/kemasan aktual.
 
@@ -15,7 +15,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 - Pelanggan tidak perlu login. Akan ada dashboard untuk admin; dashboard perlu akses admin terlindungi.
 - Hosting frontend: GitHub Pages. Backend: Cloudflare Worker. Data pesanan: Google Sheets.
 - Aset frontend sementara: gambar dari Unsplash dan ikon Font Awesome melalui CDN.
-- Merek “ruma.” dan foto hero saat ini hanya placeholder visual.
+- Merek �ruma.� dan foto hero saat ini hanya placeholder visual.
 - Pemilihan titik lokasi peta sementara dihapus dari checkout; pelanggan memilih tujuan pengiriman melalui hasil pencarian RajaOngkir.
 - `script.js` meminta Worker mencari tujuan dan menghitung tarif ekspedisi; API key tidak ada di frontend.
 - Worker source ada di `worker/index.js`; nama Worker Cloudflare `pemesanan-api`, URL `https://pemesanan-api.ajielt7.workers.dev`.
@@ -44,7 +44,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 7. **Detail produk:** pilihan bahan/ukuran/warna/desain nomor akrilik dan harga.
 8. **Tarif kurir dekat:** RajaOngkir tetap dipakai untuk kurir ekspedisi walaupun jarak kurang dari 40 km; perlu tentukan pilihan kurir dan apakah pelanggan memilih layanan atau sistem memberi daftar.
 9. **Aset frontend:** pilih foto Unsplash yang relevan, versi Font Awesome, dan URL CDN saat implementasi; siapkan fallback jika aset eksternal gagal dimuat.
-10. **Identitas visual:** konfirmasi nama usaha/brand pengganti placeholder “ruma.” dan pilih foto produk/rumah final.
+10. **Identitas visual:** konfirmasi nama usaha/brand pengganti placeholder �ruma.� dan pilih foto produk/rumah final.
 
 ## Catatan risiko
 
@@ -58,4 +58,3 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Cara melanjutkan di sesi berikutnya
 
 Mulai dengan memeriksa bagian **Keputusan teknis yang masih terbuka**, pilih koneksi Google dan layanan API, lalu implementasikan Tahap 1 pada `roadmap.md`. Jangan menaruh API key atau kredensial di berkas frontend/repository publik.
-
