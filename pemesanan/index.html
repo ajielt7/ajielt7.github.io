@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3ed">
+  <meta name="description" content="Pesan nomor rumah akrilik sesuai gaya rumah Anda.">
+  <title>Ruma — Nomor Rumah Akrilik</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Ruma, beranda"><span class="brand-icon"><i class="fa-solid fa-house" aria-hidden="true"></i></span><span>ruma<span class="brand-dot">.</span></span></a>
+    <nav class="desktop-nav" aria-label="Navigasi utama"><a href="#tentang">Tentang</a><a href="#cara-pesan">Cara pesan</a></nav>
+    <a class="header-cta" href="#pesan">Pesan sekarang <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-line"></span> DETAIL KECIL, KESAN BESAR</span>
+        <h1>Rumah punya cerita.<br><em>Awali dari nomornya.</em></h1>
+        <p class="hero-lead">Nomor rumah akrilik yang dibuat khusus untuk menyambut setiap tamu pulang.</p>
+        <a class="primary-link" href="#pesan">Buat pesanan <span class="link-circle"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span></a>
+        <div class="hero-caption"><span class="caption-rule"></span><span>Dirancang personal<br>dibuat untuk rumahmu</span></div>
+      </div>
+      <div class="hero-visual">
+        <img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&amp;fit=crop&amp;w=1300&amp;q=85" alt="Teras rumah modern dengan suasana hangat" fetchpriority="high">
+        <div class="image-shade"></div>
+        <div class="number-plaque" aria-label="Contoh plakat nomor rumah"><span>JALAN MELATI</span><strong>27<span>A</span></strong><small>CIMEKAR · BANDUNG</small></div>
+        <div class="image-note"><span class="note-star">✳</span><span>Sentuhan personal<br>di depan pintu</span></div>
+        <div class="hero-image-index">01 <span></span> 03</div>
+      </div>
+      <div class="hero-side-label">AKRILIK CUSTOM&nbsp; · &nbsp;DIBUAT DENGAN TELITI</div>
+    </section>
+
+    <section class="intro-strip" id="tentang">
+      <p>Setiap rumah layak punya<br><em>identitas yang berkesan.</em></p>
+      <div class="intro-detail"><span class="intro-icon"><i class="fa-regular fa-sun" aria-hidden="true"></i></span><p>Nomor rumah akrilik custom dengan tampilan bersih dan modern. Kamu tentukan tulisannya, kami bantu siapkan pesanannya.</p></div>
+      <span class="intro-mark" aria-hidden="true">R.</span>
+    </section>
+
+    <section class="order-section" id="pesan">
+      <div class="order-heading">
+        <div><span class="eyebrow"><span class="eyebrow-line"></span> MULAI PESANAN</span><h2>Ceritakan<br><em>rumahmu.</em></h2></div>
+        <p>Isi detail nomor rumah dan alamat tujuan. Ongkir ojol dihitung dari titik rumah pada peta.</p>
+      </div>
+
+      <form id="order-form" novalidate>
+        <div class="form-section-heading"><span class="step-number">01</span><div><h3>Detail produk</h3><p>Nomor dan tulisan yang ingin dibuat.</p></div></div>
+        <div class="fields-grid">
+          <label class="field field-wide">Tulisan pada nomor rumah <span class="required">*</span><input name="displayText" required maxlength="60" placeholder="Contoh: 27A atau Rumah Keluarga Ardi" autocomplete="off"><small>Gunakan tulisan persis seperti yang ingin dicetak.</small></label>
+          <label class="field">Jumlah <span class="required">*</span><span class="quantity-control"><button class="quantity-button" type="button" data-quantity-step="-1" aria-label="Kurangi jumlah"><i class="fa-solid fa-minus" aria-hidden="true"></i></button><input name="quantity" type="number" min="1" max="20" value="1" required aria-label="Jumlah pesanan"><button class="quantity-button" type="button" data-quantity-step="1" aria-label="Tambah jumlah"><i class="fa-solid fa-plus" aria-hidden="true"></i></button></span></label>
+          <label class="field">Preferensi warna <span class="optional">opsional</span><select name="color"><option value="Belum ditentukan">Pilih nanti</option><option>Hitam</option><option>Putih</option><option>Emas</option><option>Silver</option><option>Custom / diskusi</option></select></label>
+          <label class="field field-wide">Catatan desain <span class="optional">opsional</span><textarea name="designNotes" rows="3" maxlength="400" placeholder="Ukuran, gaya huruf, atau detail yang ingin didiskusikan"></textarea></label>
+        </div>
+
+        <div class="form-divider"></div>
+        <div class="form-section-heading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3><p>Supaya kami tahu harus menghubungi dan mengirim ke mana.</p></div></div>
+        <div class="fields-grid">
+          <label class="field">Nama lengkap <span class="required">*</span><input name="customerName" required autocomplete="name" placeholder="Nama penerima"></label>
+          <label class="field">Nomor WhatsApp <span class="required">*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="08xx xxxx xxxx"><small>Untuk konfirmasi detail dan pengiriman.</small></label>
+          <label class="field field-wide">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
+        </div>
+
+        <div class="form-divider"></div>
+        <div class="form-section-heading"><span class="step-number">03</span><div><h3>Titik lokasi rumah</h3><p>Ketuk peta untuk menandai lokasi pengiriman.</p></div></div>
+        <div class="map-panel">
+          <div class="map-topline"><span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> TITIK PENGIRIMAN</span><button type="button" class="map-locate" id="locate-button"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Gunakan lokasiku</button></div>
+          <div id="delivery-map" aria-label="Peta untuk memilih lokasi pengiriman"></div>
+          <div class="map-foot"><span id="location-label">Belum ada titik dipilih</span><span id="coordinate-label">Pilih titik pada peta</span></div>
+          <button type="button" class="route-button" id="route-button" disabled><i class="fa-solid fa-route" aria-hidden="true"></i> Hitung jarak pengiriman</button>
+          <p class="map-privacy"><i class="fa-solid fa-lock" aria-hidden="true"></i> Koordinat digunakan untuk menghitung ongkir dan menyiapkan pengiriman.</p>
+        </div>
+
+        <div class="delivery-result" id="delivery-result" hidden aria-live="polite">
+          <div class="distance-summary"><span class="distance-icon"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i></span><div><small>ESTIMASI JARAK JALAN</small><strong id="distance-value">—</strong></div></div>
+          <p id="distance-message">Opsi pengiriman tersedia berdasarkan jarak.</p>
+        </div>
+        <fieldset class="shipping-fieldset" id="shipping-fieldset" disabled>
+          <legend>Pilih pengiriman</legend>
+          <div class="shipping-options" id="shipping-options"></div>
+          <p class="shipping-footnote" id="shipping-footnote">Pilih titik lokasi dan hitung jarak terlebih dahulu.</p>
+        </fieldset>
+
+        <div class="form-divider"></div>
+        <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Setelah sistem pesanan aktif, kode referensi pembayaran akan tampil di checkout. Cantumkan kode tersebut pada deskripsi transfer dan unggah screenshot bukti pembayaran.</p></div></div>
+        <button class="submit-button" type="submit">Lihat ringkasan pesanan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        <p class="demo-notice" id="form-status" role="status" aria-live="polite">Prototipe tampilan: pesanan belum dikirim atau disimpan.</p>
+      </form>
+    </section>
+
+    <section class="how-section" id="cara-pesan">
+      <div class="how-title"><span class="eyebrow"><span class="eyebrow-line"></span> DARI PESANAN KE RUMAH</span><h2>Jelas di setiap<br><em>langkahnya.</em></h2></div>
+      <ol class="how-steps"><li><span>01</span><div><h3>Ceritakan detailnya</h3><p>Tulis nomor rumah dan alamat tujuan dengan lengkap.</p></div><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></li><li><span>02</span><div><h3>Konfirmasi ongkir</h3><p>Pilih ojol atau ekspedisi sesuai jarak dan kebutuhan.</p></div><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></li><li><span>03</span><div><h3>Transfer & kirim bukti</h3><p>Gunakan kode pembayaran di deskripsi transfer. Admin akan memeriksa pembayaran.</p></div><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></li></ol>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="brand" href="#home"><span class="brand-icon"><i class="fa-solid fa-house" aria-hidden="true"></i></span><span>ruma<span class="brand-dot">.</span></span></a><p>Nomor rumah akrilik, dibuat personal.</p><a href="#pesan">Mulai pesanan <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></footer>
+
+  <dialog class="summary-dialog" id="summary-dialog" aria-labelledby="summary-title">
+    <div class="dialog-head"><span class="dialog-mark"><i class="fa-solid fa-house" aria-hidden="true"></i></span><button type="button" class="dialog-close" id="close-dialog" aria-label="Tutup ringkasan"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+    <span class="eyebrow"><span class="eyebrow-line"></span> RINGKASAN PESANAN</span>
+    <h2 id="summary-title">Hampir <em>siap.</em></h2>
+    <div id="summary-content" class="summary-content"></div>
+    <p class="summary-warning"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Ini pratinjau lokal. Backend belum terhubung, jadi pesanan, kode pembayaran, dan bukti transfer belum disimpan.</p>
+    <button type="button" class="dialog-button" id="back-to-form">Kembali ke formulir</button>
+  </dialog>
+  <div class="dialog-backdrop" id="dialog-backdrop" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="script.js"></script>
+</body>
+</html>
