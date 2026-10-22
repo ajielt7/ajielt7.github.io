@@ -4,10 +4,10 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 
 ## Status saat ini
 
-- **Fase:** prototipe frontend (Tahap 1 roadmap).
-- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian tujuan RajaOngkir, estimasi ekspedisi otomatis, dan pratinjau lokal. Worker `pemesanan-api` memakai secret RajaOngkir di Cloudflare. Hasil pencarian tujuan disimpan sebagai respons JSON pada Workers Cache selama 30 hari; hasil kosong 5 menit. ID asal 5052 dicatat di `data/rajaongkir-reference.json`, sehingga pencarian asal tidak berulang untuk tiap hitung tarif. Setelah lokasi dipilih dan keranjang berisi produk, tarif beberapa ekspedisi diminta sekali secara otomatis. Checkout menampilkan satu dropdown dengan kurir termurah terpilih. Saat dibuka, tersedia maksimal dua alternatif reguler dan satu kurir dengan kargo jika ada; kurir lain berada di bagian “Kurir lainnya”. Setelah pelanggan memilih kurir, daftar layanan dan harga kurir itu ditampilkan dari yang termurah. Setelah memilih layanan, daftar harga menutup dan dropdown menampilkan kurir serta layanan/harga pilihan. Layanan kargo ditandai bila bisa dikenali pada respons RajaOngkir. Bobot masih contoh 500 gram per item. Titik peta dan ongkir ojol sementara dihapus. Harga, ukuran, variasi, serta bobot produk masih contoh.
+- **Fase:** integrasi order Google Sheets (Tahap 2 roadmap; konfigurasi akun belum dilakukan).
+- **Kode aplikasi:** frontend berisi katalog 12 produk, keranjang/checkout, kontak/alamat, pencarian dan estimasi RajaOngkir. Worker menyediakan endpoint pembuatan pesanan yang menghitung subtotal dari harga produk di server, membuat kode referensi, dan meneruskan order ke Apps Script. Source Apps Script `apps-script/Code.gs` menulis ke tab `Pesanan` serta mencegah duplikat berdasarkan client request ID. Integrasi belum aktif sampai project Apps Script dibuat/deploy dan Script Properties/Worker secrets dikonfigurasi. Upload bukti dan dashboard ACC manual belum dibuat. Bobot produk masih contoh 500 gram/unit; harga produk juga masih contoh.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
-- **Tahap berikutnya:** buka halaman checkout dari browser dan pastikan perhitungan otomatis, daftar ekspedisi, pemilihan tarif termurah, serta opsi kargo merespons sesuai rute/akun; lalu ganti bobot contoh dengan bobot produk/kemasan aktual.
+- **Tahap berikutnya:** buat project Apps Script dari Google Sheet, pasang `apps-script/Code.gs`, isi Script Properties dan Worker secrets. Setelah order tersimpan, lanjutkan upload bukti dan dashboard ACC manual.
 
 ## Keputusan yang sudah disepakati
 
@@ -20,7 +20,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 - `script.js` meminta Worker mencari tujuan dan menghitung tarif ekspedisi; API key tidak ada di frontend.
 - Worker source ada di `worker/index.js`; nama Worker Cloudflare `pemesanan-api`, URL `https://pemesanan-api.ajielt7.workers.dev`.
 - Worker memakai API RajaOngkir V2 dengan beberapa kode kurir, dan bobot prototipe 500 gram per item. Pencarian live mengembalikan lokasi asal `CIMEKAR, CILEUNYI, BANDUNG, JAWA BARAT, 40623` dengan ID 5052. Data wilayah dicache bertahap per kata pencarian; belum ada snapshot lengkap semua wilayah Indonesia. Cakupan kurir dan layanan kargo perlu diverifikasi lewat respons nyata untuk alamat pelanggan.
-- Formulir memvalidasi input dan membuka dialog pratinjau lokal; belum mengirim atau menyimpan pesanan.
+- Formulir mengirim checkout ke endpoint order Worker. Penyimpanan menunggu konfigurasi Apps Script dan Google Sheet.
 - Target Pages: repository publik `ajielt7/ajielt7.github.io`, default branch `master`, sudah memuat situs utama. Aplikasi ditempatkan di subfolder `pemesanan/` untuk mempertahankan halaman utama.
 - Peta/UI pin dan routing ojol: ditunda sementara; Leaflet/OSRM tidak dimuat saat ini.
 - Titik asal kirim: Cimekar, Cileunyi.
@@ -35,7 +35,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 
 ## Keputusan teknis yang masih terbuka
 
-1. **Integrasi Google:** Apps Script sebagai penghubung atau Cloudflare Worker memakai Google API langsung.
+1. **Konfigurasi Google:** Apps Script Web App dipilih sebagai penghubung. Isi `SPREADSHEET_ID`, `WORKER_SHARED_TOKEN`, `GOOGLE_APPS_SCRIPT_URL`, dan `GOOGLE_SCRIPT_TOKEN` sesuai `apps-script/README.md`.
 2. **Akses admin:** mekanisme autentikasi dan bagaimana kredensial admin dikelola.
 3. **Layanan peta/rute:** tile provider OSM dan endpoint routing yang ketentuannya sesuai. OSRM publik adalah prototipe tanpa jaminan ketersediaan.
 4. **RajaOngkir:** uji penghitungan harga JNE/J&T terhadap alamat tujuan nyata dan pastikan cakupan layanan sesuai akun.
@@ -57,4 +57,4 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 
 ## Cara melanjutkan di sesi berikutnya
 
-Mulai dengan memeriksa bagian **Keputusan teknis yang masih terbuka**, pilih koneksi Google dan layanan API, lalu implementasikan Tahap 1 pada `roadmap.md`. Jangan menaruh API key atau kredensial di berkas frontend/repository publik.
+Lanjutkan dengan membuat Sheet, memasang `apps-script/Code.gs`, mengisi Script Properties dan Worker secrets sesuai `apps-script/README.md`, lalu buat alur upload bukti dan dashboard ACC manual. Jangan menaruh API key atau kredensial di frontend/repository publik.
