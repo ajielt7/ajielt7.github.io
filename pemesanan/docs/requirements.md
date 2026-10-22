@@ -15,7 +15,7 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 
 | ID | Kebutuhan | Kriteria penerimaan |
 | --- | --- | --- |
-| FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Formulir menangkap identitas/kontak pelanggan, detail produk, jumlah, alamat, dan catatan yang dibutuhkan. Rincian opsi produk masih perlu ditetapkan. |
+| FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Halaman menampilkan 12 pilihan produk dan keranjang checkout di sisi katalog pada layar lebar. Checkout memuat kontak, alamat, titik peta, metode kirim, dan subtotal produk. Detail tulisan/desain produk ditunda; nama, ukuran, dan harga pada 12 kartu masih contoh prototipe. |
 | FR-02 | Pelanggan dapat menentukan titik rumah pada peta. | UI peta memungkinkan pemilihan pin dan sistem menerima koordinat tujuan. |
 | FR-03 | Sistem menentukan opsi pengiriman berdasarkan jarak dari Cimekar, Cileunyi. | Di bawah 40 km tersedia ojol dan kurir ekspedisi; 40 km atau lebih hanya kurir ekspedisi. Jarak yang dipakai adalah rute jalan. |
 | FR-04 | Sistem menghitung ongkir ojol. | Empat km pertama Rp10.000. Setiap km setelahnya Rp2.500. Pecahan km dibulatkan ke atas. Rumus: jika `ceil(jarak) <= 4`, ongkir Rp10.000; selebihnya Rp10.000 + (`ceil(jarak) - 4`) × Rp2.500. |
@@ -49,3 +49,4 @@ Akun pelanggan, payment gateway, pengecekan mutasi bank otomatis, inventori otom
 - Pada jarak 40 km atau lebih, hanya kurir ekspedisi tersedia.
 - Ongkir ekspedisi menggunakan RajaOngkir; tarif ojol memakai formula per km di FR-04.
 - Pembayaran dilakukan lewat transfer bank dan diverifikasi admin secara manual terhadap mutasi.
+
