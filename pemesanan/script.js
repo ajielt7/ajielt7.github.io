@@ -211,6 +211,8 @@
             services.querySelectorAll('.shipping-rate-option').forEach((rateLabel) => rateLabel.classList.remove('selected'));
             label.classList.add('selected');
             pickerPrice.textContent = `${option.service || option.description || option.name || option.code} - ${formatRupiah(Number(option.cost))}`;
+            services.hidden = true;
+            setStatus(`Pilihan ${pickerName.textContent} - ${formatRupiah(Number(option.cost))} tersimpan. Klik dropdown untuk mengganti kurir atau layanan.`);
           });
           const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
           const title = document.createElement('strong'); title.textContent = `${option.service || option.description || option.name || option.code}${option.shippingCategory === 'cargo' ? ' - Kargo' : ''}`;
