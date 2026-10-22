@@ -1,0 +1,9 @@
+# API credentials and other local secrets
+ApiKey.txt
+API KEY
+API KEY.txt
+.dev.vars
+.env
+.env.*
+!.env.example
+
