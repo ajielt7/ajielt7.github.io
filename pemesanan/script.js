@@ -448,3 +448,4 @@ function scheduleShippingQuote() {
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
 })();
+
