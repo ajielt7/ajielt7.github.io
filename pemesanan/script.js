@@ -79,15 +79,9 @@
     }
     const subtotal = entries.reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     document.querySelector('#cart-subtotal').textContent = formatRupiah(subtotal);
-    updateQuoteButton();
     scheduleShippingQuote();
   }
-
-  function updateQuoteButton() {
-    document.querySelector('#shipping-quote-button').disabled = cart.size === 0 || !selectedDestination;
-  }
-
-  function scheduleShippingQuote() {
+function scheduleShippingQuote() {
     if (!selectedDestination || cart.size === 0) {
       if (quoteController) quoteController.abort();
       return;
@@ -127,7 +121,6 @@
           results.replaceChildren();
           document.querySelector('#shipping-rates').replaceChildren();
           selectedRate = null;
-          updateQuoteButton();
           scheduleShippingQuote();
         });
         results.append(option);
@@ -145,10 +138,7 @@
     if (quoteController) quoteController.abort();
     quoteController = new AbortController();
     const requestId = ++quoteRequestId;
-    const button = document.querySelector('#shipping-quote-button');
     const rates = document.querySelector('#shipping-rates');
-    button.disabled = true;
-    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Menghitung ongkir�';
     selectedRate = null;
     rates.replaceChildren();
     try {
@@ -261,11 +251,6 @@
       const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Layanan RajaOngkir sedang tidak tersedia.';
       rates.replaceChildren(message);
       setStatus(error.message || 'Ongkir belum dapat dihitung.', true);
-    } finally {
-      if (requestId === quoteRequestId) {
-        button.innerHTML = '<i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Hitung ulang ongkir';
-        updateQuoteButton();
-      }
     }
   }
 
@@ -339,12 +324,10 @@
     document.querySelector('#destination-id').value = '';
     document.querySelector('#destination-results').replaceChildren();
     document.querySelector('#shipping-rates').replaceChildren();
-    updateQuoteButton();
     const search = destinationInput.value.trim();
     clearTimeout(searchTimer);
     if (search.length >= 3) searchTimer = setTimeout(() => searchDestinations(search), 350);
   });
-  document.querySelector('#shipping-quote-button').addEventListener('click', calculateShipping);
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     setStatus('');
@@ -361,7 +344,7 @@
     }
     if (!selectedRate) {
       setStatus('Tunggu estimasi ongkir selesai, lalu pilih salah satu layanan pengiriman.', true);
-      document.querySelector('#shipping-quote-button').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('#shipping-rates').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     showSummary(new FormData(form));
