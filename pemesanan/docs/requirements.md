@@ -16,9 +16,9 @@ Pelanggan tidak perlu login. Dashboard admin harus memiliki kontrol akses/login 
 | ID | Kebutuhan | Kriteria penerimaan |
 | --- | --- | --- |
 | FR-01 | Pelanggan dapat membuat pesanan nomor rumah akrilik. | Halaman menampilkan 12 pilihan produk dan keranjang checkout di sisi katalog pada layar lebar. Checkout memuat kontak, alamat, titik peta, metode kirim, dan subtotal produk. Detail tulisan/desain produk ditunda; nama, ukuran, dan harga pada 12 kartu masih contoh prototipe. |
-| FR-02 | Pelanggan dapat menentukan titik rumah pada peta. | UI peta memungkinkan pemilihan pin dan sistem menerima koordinat tujuan. |
-| FR-03 | Sistem menentukan opsi pengiriman berdasarkan jarak dari Cimekar, Cileunyi. | Di bawah 40 km tersedia ojol dan kurir ekspedisi; 40 km atau lebih hanya kurir ekspedisi. Jarak yang dipakai adalah rute jalan. |
-| FR-04 | Sistem menghitung ongkir ojol. | Empat km pertama Rp10.000. Setiap km setelahnya Rp2.500. Pecahan km dibulatkan ke atas. Rumus: jika `ceil(jarak) <= 4`, ongkir Rp10.000; selebihnya Rp10.000 + (`ceil(jarak) - 4`) × Rp2.500. |
+| FR-02 | Pemilihan titik rumah pada peta. | Ditunda sementara; checkout saat ini hanya meminta alamat tertulis dan tidak mengumpulkan koordinat. |
+| FR-03 | Penentuan opsi pengiriman berdasarkan jarak dari Cimekar, Cileunyi. | Ditunda sampai fitur titik lokasi kembali tersedia; metode kirim dan ongkir untuk prototipe ini dikonfirmasi manual. |
+| FR-04 | Perhitungan ongkir ojol. | Rumus bisnis: 4 km pertama Rp10.000, setiap km setelahnya Rp2.500, jarak pecahan dibulatkan ke atas. Kalkulasi UI sementara dinonaktifkan bersama fitur titik lokasi. |
 | FR-05 | Sistem memperoleh ongkir ekspedisi. | Ongkir dihitung menggunakan API RajaOngkir untuk layanan ekspedisi seperti JNE/J&T. Detail produk/API dan ketersediaan layanan perlu diverifikasi sebelum implementasi. |
 | FR-06 | Checkout menampilkan kode referensi pembayaran otomatis. | Kode dibuat unik oleh backend, ditampilkan dengan instruksi yang jelas, dan dikaitkan dengan pesanan. Pelanggan mencantumkan kode pada deskripsi transfer. |
 | FR-07 | Pelanggan dapat mengunggah screenshot bukti transfer. | File disimpan di Google Drive dengan akses terkendali; Sheet mencatat referensi file dan status bukti. Tipe serta batas ukuran file perlu ditentukan. |
