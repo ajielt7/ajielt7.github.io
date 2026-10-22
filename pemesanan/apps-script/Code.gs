@@ -21,6 +21,8 @@ function doPost(event) {
   if (!constantTimeEquals_(String(payload.token || ''), expectedToken)) {
     return output_({ ok: false, error: 'Permintaan tidak diizinkan.' });
   }
+  if (payload.action === 'authorizeProof') return authorizeProof_(payload);
+  if (payload.action === 'attachProof') return attachProof_(payload);
   if (payload.action !== 'createOrder' || !payload.order) {
     return output_({ ok: false, error: 'Aksi tidak dikenal.' });
   }
@@ -86,6 +88,67 @@ function getOrdersSheet_() {
     sheet.setFrozenRows(1);
   }
   return sheet;
+}
+
+function authorizeProof_(payload) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const rowNumber = findOrderRow_(payload);
+    if (!rowNumber) return output_({ ok: true, authorized: false, error: 'Pesanan tidak ditemukan.' });
+    const sheet = getOrdersSheet_();
+    const row = sheet.getRange(rowNumber, 1, 1, ORDER_HEADERS.length).getValues()[0];
+    if (row[16] !== 'MENUNGGU_PEMBAYARAN') return output_({ ok: true, authorized: false, error: 'Status pesanan tidak mengizinkan unggah bukti.' });
+    if (row[18]) return output_({ ok: true, authorized: false, error: 'Bukti pembayaran untuk pesanan ini sudah pernah diunggah.' });
+    return output_({ ok: true, authorized: true });
+  } catch (error) {
+    console.error('authorizeProof failed', error);
+    return output_({ ok: false, error: 'Pesanan tidak dapat diverifikasi.' });
+  } finally {
+    if (lock.hasLock()) lock.releaseLock();
+  }
+}
+
+function attachProof_(payload) {
+  const fileKey = String(payload.fileKey || '');
+  if (!/^payment-proofs\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/i.test(fileKey)) {
+    return output_({ ok: false, error: 'Referensi file bukti tidak valid.' });
+  }
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const rowNumber = findOrderRow_(payload);
+    if (!rowNumber) return output_({ ok: false, error: 'Pesanan tidak ditemukan.' });
+    const sheet = getOrdersSheet_();
+    const row = sheet.getRange(rowNumber, 1, 1, ORDER_HEADERS.length).getValues()[0];
+    if (row[16] !== 'MENUNGGU_PEMBAYARAN' || row[18]) {
+      return output_({ ok: false, error: 'Pesanan sudah berubah atau bukti telah diunggah.' });
+    }
+    sheet.getRange(rowNumber, 19, 1, 2).setValues([[safeCell_(fileKey), safeCell_(payload.uploadedAt || new Date().toISOString())]]);
+    return output_({ ok: true });
+  } catch (error) {
+    console.error('attachProof failed', error);
+    return output_({ ok: false, error: 'Bukti gagal dicatat pada pesanan.' });
+  } finally {
+    if (lock.hasLock()) lock.releaseLock();
+  }
+}
+
+function findOrderRow_(payload) {
+  const orderId = String(payload.orderId || '');
+  const paymentCode = String(payload.paymentCode || '');
+  const phone = String(payload.phone || '').replace(/\D/g, '');
+  if (!/^[0-9a-f-]{36}$/i.test(orderId) || !paymentCode || !phone) return 0;
+  const sheet = getOrdersSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return 0;
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
+  const offset = ids.findIndex((row) => row[0] === orderId);
+  if (offset < 0) return 0;
+  const rowNumber = offset + 2;
+  const row = sheet.getRange(rowNumber, 1, 1, ORDER_HEADERS.length).getDisplayValues()[0];
+  const savedPhone = String(row[5] || '').replace(/\D/g, '');
+  return row[2] === paymentCode && savedPhone === phone ? rowNumber : 0;
 }
 
 function safeCell_(value) {
