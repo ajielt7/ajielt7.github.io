@@ -26,6 +26,7 @@ Proyek percobaan untuk membangun sistem pemesanan barang fisik (awal: nomor ruma
 - [Arsitektur](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
 - [Status, keputusan, dan pekerjaan lanjutan](docs/state.md)
+- [Pemasangan penghubung Google Sheets](apps-script/README.md)
 
 ## Publikasi GitHub Pages
 
@@ -33,5 +34,4 @@ Frontend berada di folder `pemesanan/` pada repository Pages `ajielt7/ajielt7.gi
 
 ## Status
 
-Prototipe checkout dan integrasi Worker RajaOngkir sudah disiapkan. Respons live RajaOngkir belum diverifikasi dari sesi ini. Pesanan tetap belum tersimpan; kode pembayaran dan unggah bukti belum tersedia. Bobot katalog masih contoh. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
-
+Checkout, integrasi Worker RajaOngkir, endpoint pembuatan pesanan, dan adapter Apps Script sudah disiapkan di source. Sebelum pesanan bisa tersimpan, Apps Script perlu dipasang dan konfigurasi Google/Cloudflare perlu diisi. Upload bukti dan dashboard ACC manual menjadi tahap berikutnya. Bobot katalog masih contoh. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
