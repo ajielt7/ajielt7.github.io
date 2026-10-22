@@ -1,6 +1,6 @@
 # Penghubung Google Sheets
 
-`Code.gs` adalah endpoint Web App Apps Script yang menerima pesanan dari Cloudflare Worker dan menambahkannya ke tab `Pesanan`. Baris judul dibuat otomatis jika tab kosong. Permintaan berulang dengan `clientRequestId` yang sama mengembalikan pesanan yang sudah ada agar tidak membuat duplikat.
+`Code.gs` adalah endpoint Web App Apps Script yang menerima pesanan dari Cloudflare Worker dan menambahkannya ke tab `Pesanan`. Baris judul dibuat otomatis jika tab kosong. Permintaan berulang dengan `clientRequestId` yang sama mengembalikan pesanan yang sudah ada agar tidak membuat duplikat. Aksi `authorizeProof` dan `attachProof` memverifikasi pesanan lalu mencatat key gambar bukti yang disimpan privat di Cloudflare R2.
 
 ## Pasang ke Google Sheet
 
@@ -22,6 +22,6 @@ Apps Script memakai `SPREADSHEET_ID` untuk membuka spreadsheet dan mengelola tab
 
 ## Kolom yang dibuat
 
-`order_id`, `client_request_id`, `payment_code`, `created_at`, identitas/alamat pelanggan, tujuan, rincian produk JSON, subtotal, kurir/layanan/ongkir, total, status pembayaran/pesanan, referensi bukti Drive, waktu ACC, admin, dan catatan admin.
+`order_id`, `client_request_id`, `payment_code`, `created_at`, identitas/alamat pelanggan, tujuan, rincian produk JSON, subtotal, kurir/layanan/ongkir, total, status pembayaran/pesanan, object key bukti R2, waktu ACC, admin, dan catatan admin.
 
-Status awal adalah `MENUNGGU_PEMBAYARAN`. Upload bukti dan dashboard ACC manual belum termasuk pada tahap endpoint pembuatan pesanan ini.
+Status awal adalah `MENUNGGU_PEMBAYARAN`. Apps Script tidak menyimpan konten gambar; kolom `proof_file_id` berisi object key privat R2 dan `proof_uploaded_at` berisi waktu unggah. Kode Apps Script perlu diperbarui dan deployment Web App diterbitkan sebagai versi baru setelah perubahan.
