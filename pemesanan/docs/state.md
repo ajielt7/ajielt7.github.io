@@ -19,7 +19,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 - Pemilihan titik lokasi peta sementara dihapus dari checkout; pelanggan memilih tujuan pengiriman melalui hasil pencarian RajaOngkir.
 - `script.js` meminta Worker mencari tujuan dan menghitung tarif ekspedisi; API key tidak ada di frontend.
 - Worker source ada di `worker/index.js`; nama Worker Cloudflare `pemesanan-api`, URL `https://pemesanan-api.ajielt7.workers.dev`.
-- Worker memakai API RajaOngkir V2, kurir `jne:jnt`, dan bobot prototipe 500 gram per item. Lokasi asal dicari sebagai Cimekar, Cileunyi pada saat permintaan ongkir; respons live dan kecocokan lokasi belum diverifikasi.
+- Worker memakai API RajaOngkir V2, kurir `jne:jnt`, dan bobot prototipe 500 gram per item. Pencarian live mengembalikan lokasi asal `CIMEKAR, CILEUNYI, BANDUNG, JAWA BARAT, 40623` dengan ID 5052. Field `subdistrict`, `district`, dan `city` kosong pada hasil tersebut, sehingga Worker mencocokkan nama dari `label`.
 - Formulir memvalidasi input dan membuka dialog pratinjau lokal; belum mengirim atau menyimpan pesanan.
 - Target Pages: repository publik `ajielt7/ajielt7.github.io`, default branch `master`, sudah memuat situs utama. Aplikasi ditempatkan di subfolder `pemesanan/` untuk mempertahankan halaman utama.
 - Peta/UI pin dan routing ojol: ditunda sementara; Leaflet/OSRM tidak dimuat saat ini.
@@ -38,7 +38,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 1. **Integrasi Google:** Apps Script sebagai penghubung atau Cloudflare Worker memakai Google API langsung.
 2. **Akses admin:** mekanisme autentikasi dan bagaimana kredensial admin dikelola.
 3. **Layanan peta/rute:** tile provider OSM dan endpoint routing yang ketentuannya sesuai. OSRM publik adalah prototipe tanpa jaminan ketersediaan.
-4. **RajaOngkir:** pastikan ID asal pencarian Cimekar tepat, cakupan JNE/J&T dari jenis akun, dan uji harga terhadap alamat nyata.
+4. **RajaOngkir:** uji penghitungan harga JNE/J&T terhadap alamat tujuan nyata dan pastikan cakupan layanan sesuai akun.
 5. **WhatsApp otomatis:** jenis akun/API, konfigurasi pesan, biaya, serta mekanisme retry/log.
 6. **Upload bukti:** batas ukuran/tipe, retensi, dan akses admin ke Drive.
 7. **Detail produk:** pilihan bahan/ukuran/warna/desain nomor akrilik dan harga.
