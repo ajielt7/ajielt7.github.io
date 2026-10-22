@@ -43,9 +43,16 @@
               <label class="field">Nama lengkap <span class="required">*</span><input name="customerName" required autocomplete="name" placeholder="Nama penerima"></label>
               <label class="field">Nomor WhatsApp <span class="required">*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="08xx xxxx xxxx"></label>
               <label class="field">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
+              <label class="field">Cari kelurahan, kecamatan, atau kota untuk ongkir <span class="required">*</span><input id="destination-search" type="search" autocomplete="off" placeholder="Contoh: Cileunyi, Bandung"><small>Pilih lokasi dari hasil pencarian agar ongkir dapat dihitung.</small><div class="destination-results" id="destination-results" role="listbox" aria-label="Hasil pencarian lokasi"></div></label>
+            </div>
+            <input type="hidden" id="destination-id" name="destinationId">
+            <div class="shipping-quote">
+              <button class="route-button" type="button" id="shipping-quote-button" disabled><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Hitung ongkir JNE / J&amp;T</button>
+              <small class="shipping-weight-note">Berat estimasi prototipe: 500 gram per produk, termasuk kemasan.</small>
+              <div class="shipping-rates" id="shipping-rates" aria-live="polite"></div>
             </div>
             <div class="checkout-divider"></div>
-            <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Metode dan ongkir pengiriman akan dikonfirmasi setelah alamat diperiksa.</p></div></div>
+            <div class="checkout-note"><span class="checkout-note-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></span><div><strong>Pembayaran transfer manual</strong><p>Tarif ekspedisi dihitung dari alamat pilihan. Ongkir ojol dan pembayaran akan dikonfirmasi terpisah.</p></div></div>
             <button class="submit-button" type="submit">Lihat ringkasan pesanan <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             <p class="demo-notice" id="form-status" role="status" aria-live="polite">Prototipe tampilan: pesanan belum dikirim atau disimpan.</p>
           </aside>
