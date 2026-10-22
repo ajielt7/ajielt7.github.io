@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "source": "RajaOngkir API V2",
+  "lastVerified": "2026-10-22",
+  "origin": {
+    "id": 5052,
+    "label": "CIMEKAR, CILEUNYI, BANDUNG, JAWA BARAT, 40623",
+    "postalCode": "40623"
+  },
+  "couriers": [
+    {
+      "code": "jne",
+      "name": "JNE"
+    },
+    {
+      "code": "jnt",
+      "name": "J&T Express"
+    }
+  ],
+  "destinationSearchCache": {
+    "storage": "Cloudflare Workers Cache",
+    "positiveTtlSeconds": 2592000,
+    "emptyResultTtlSeconds": 300,
+    "refresh": "Cache expires automatically; a new search refreshes the cached result."
+  }
+}
+
