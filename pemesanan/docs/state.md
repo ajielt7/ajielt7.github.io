@@ -5,7 +5,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Status saat ini
 
 - **Fase:** prototipe frontend (Tahap 1 roadmap).
-- **Kode aplikasi:** `index.html`, `styles.css`, dan `script.js` berisi katalog 12 produk, keranjang/checkout samping, data kontak dan alamat, peta, serta pratinjau lokal. Bagian detail tulisan/desain produk sementara dihapus. Harga, ukuran, dan variasi katalog hanya contoh prototipe, belum disahkan sebagai harga usaha.
+- **Kode aplikasi:** `index.html`, `styles.css`, dan `script.js` berisi katalog 12 produk, keranjang/checkout samping, data kontak dan alamat, peta, serta pratinjau lokal. Hero, pengantar, cara pesan, dan footer dihapus agar halaman fokus pada pemesanan. Bagian detail tulisan/desain produk sementara dihapus. Harga, ukuran, dan variasi katalog hanya contoh prototipe, belum disahkan sebagai harga usaha.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
 - **Tahap berikutnya:** verifikasi halaman di subpath Pages, tetapkan koordinat asal usaha, lalu putuskan integrasi Google/API sebelum membangun backend pada Tahap 2.
 
