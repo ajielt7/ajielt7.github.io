@@ -4,10 +4,11 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 
 ## Status saat ini
 
-- **Fase:** unggah bukti pembayaran ke Google Drive dan persiapan dashboard admin.
-- **Kode aplikasi:** frontend checkout dan form unggah bukti sudah disiapkan. Worker memvalidasi jenis/ukuran file dan meneruskannya ke Apps Script; Apps Script mencocokkan kode order/nomor WhatsApp, membuat folder privat `Bukti Pembayaran` bila belum ada, menyimpan gambar JPG/PNG/WebP hingga 5 MB ke Drive, lalu mencatat ID file dan waktu di Sheet. Perubahan Apps Script perlu disalin ke project dan deployment Web App dibuat versi baru agar alur aktif. Bobot produk masih contoh 500 gram/unit; harga katalog masih contoh.
+- **Fase:** aplikasi admin Android dengan antrean order, proses, dan retensi order selesai.
+- **Status integrasi:** Worker `pemesanan-api` aktif dengan endpoint `?view=all` dan `/complete`; request tanpa `Origin` hanya diterima pada route admin yang tetap memerlukan bearer token. Source Worker sudah disinkronkan ke GitHub pada 23 Okt 2026. Secret Worker tetap terpasang.
+- **Perubahan admin:** aplikasi Flutter memakai tiga tab Orderan baru/Proses/Selesai, token tersimpan terenkripsi Android Keystore, notifikasi polling 45 detik di foreground dan alarm sekitar 15 menit di background. Apps Script lokal mendukung daftar status, penandaan selesai, dan penghapusan baris/bukti Drive setelah tujuh hari.
+- **Yang masih perlu dilakukan:** salin dan terbitkan `apps-script/Code.gs` terbaru, jalankan `setupOrderCleanupTrigger` sekali, lalu bangun APK terbaru dan uji alur pada ponsel. Notifikasi latar dapat tertunda oleh mode hemat baterai.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
-- **Tahap berikutnya:** salin kode Apps Script terbaru, izinkan akses Drive, dan terbitkan versi Web App baru; setelah itu lanjutkan endpoint admin untuk melihat bukti dan ACC manual.
 
 ## Keputusan yang sudah disepakati
 
