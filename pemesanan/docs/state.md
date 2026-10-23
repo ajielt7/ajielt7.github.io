@@ -5,7 +5,7 @@ Dokumen ini adalah catatan serah-terima utama. Perbarui setiap kali keputusan, i
 ## Status saat ini
 
 - **Fase:** aplikasi admin Android dengan antrean order, proses, dan retensi order selesai.
-- **Status integrasi:** Worker `pemesanan-api` aktif dengan endpoint `?view=all` dan `/complete`; request tanpa `Origin` hanya diterima pada route admin yang tetap memerlukan bearer token. Source Worker sudah disinkronkan ke GitHub pada 23 Okt 2026. Secret Worker tetap terpasang.
+- **Status integrasi:** Worker `pemesanan-api` aktif dengan endpoint `?view=all` dan `/complete`; request tanpa `Origin` hanya diterima pada route admin yang tetap memerlukan bearer token. Source Worker dan Apps Script terbaru sudah disinkronkan ke GitHub pada 23 Okt 2026. Secret Worker tetap terpasang. Runtime Apps Script belum diterbitkan.
 - **Perubahan admin:** aplikasi Flutter memakai tiga tab Orderan baru/Proses/Selesai, token tersimpan terenkripsi Android Keystore, notifikasi polling 45 detik di foreground dan alarm sekitar 15 menit di background. Apps Script lokal mendukung daftar status, penandaan selesai, dan penghapusan baris/bukti Drive setelah tujuh hari.
 - **Yang masih perlu dilakukan:** salin dan terbitkan `apps-script/Code.gs` terbaru, jalankan `setupOrderCleanupTrigger` sekali, lalu bangun APK terbaru dan uji alur pada ponsel. Notifikasi latar dapat tertunda oleh mode hemat baterai.
 - **Dokumen inti yang tersedia:** README, requirements, architecture, roadmap, state.
