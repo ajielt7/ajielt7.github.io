@@ -33,7 +33,7 @@ function json(data, status, origin, cacheControl = 'no-store') {
   if (origin && ALLOWED_ORIGINS.has(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-    headers['Access-Control-Allow-Headers'] = 'Content-Type';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
     headers.Vary = 'Origin';
   }
   return new Response(status === 204 ? null : JSON.stringify(data), { status, headers });
@@ -76,11 +76,33 @@ function bytesToBase64(bytes) {
   return btoa(binary);
 }
 
+function constantTimeEquals(left, right) {
+  let difference = left.length ^ right.length;
+  const length = Math.max(left.length, right.length);
+  for (let index = 0; index < length; index += 1) {
+    difference |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
+  }
+  return difference === 0;
+}
+
+function isAdminAuthorized(request, env) {
+  const expected = String(env.ADMIN_TOKEN || '');
+  const authorization = request.headers.get('Authorization') || '';
+  const supplied = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+  return Boolean(expected && supplied && constantTimeEquals(supplied, expected));
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin');
-    if (!origin || !ALLOWED_ORIGINS.has(origin)) return json({ error: 'Origin tidak diizinkan.' }, 403);
+    const isAdminEndpoint = url.pathname === '/api/admin/orders'
+      || /^\/api\/admin\/orders\/[0-9a-f-]{36}\/(?:approve|complete)$/i.test(url.pathname);
+    // Native Android clients do not send a browser Origin header. Permit that
+    // only on admin routes, which still require the ADMIN_TOKEN bearer token.
+    if ((!origin && !isAdminEndpoint) || (origin && !ALLOWED_ORIGINS.has(origin))) {
+      return json({ error: 'Origin tidak diizinkan.' }, 403);
+    }
     if (request.method === 'OPTIONS') return json({}, 204, origin);
 
     try {
@@ -180,6 +202,46 @@ export default {
         return json({ ok: true, message: 'Bukti pembayaran berhasil disimpan ke Google Drive.' }, 201, origin);
       }
 
+      if (url.pathname === '/api/admin/orders' && request.method === 'GET') {
+        if (!env.ADMIN_TOKEN) return json({ error: 'Akses admin belum dikonfigurasi.' }, 503, origin);
+        if (!isAdminAuthorized(request, env)) return json({ error: 'Token admin tidak valid.' }, 401, origin);
+        const allOrders = url.searchParams.get('view') === 'all';
+        const result = await appsScript(env, allOrders ? 'listOrders' : 'listPendingOrders', {});
+        if (!result?.ok) return json({ error: result?.error || 'Daftar pesanan gagal dimuat.' }, 502, origin);
+        return json({ ok: true, orders: Array.isArray(result.orders) ? result.orders : [] }, 200, origin);
+      }
+
+      const approvalMatch = url.pathname.match(/^\/api\/admin\/orders\/([0-9a-f-]{36})\/approve$/i);
+      if (approvalMatch && request.method === 'POST') {
+        if (!env.ADMIN_TOKEN) return json({ error: 'Akses admin belum dikonfigurasi.' }, 503, origin);
+        if (!isAdminAuthorized(request, env)) return json({ error: 'Token admin tidak valid.' }, 401, origin);
+        const body = await request.json().catch(() => null);
+        const paymentCode = String(body?.paymentCode || '').trim();
+        const adminNote = String(body?.adminNote || '').trim();
+        if (!/^PNA-\d{8}-[A-F0-9]{8}$/.test(paymentCode) || adminNote.length > 500) {
+          return json({ error: 'Data persetujuan tidak valid.' }, 400, origin);
+        }
+        const result = await appsScript(env, 'approveOrder', {
+          orderId: approvalMatch[1], paymentCode, adminNote
+        });
+        if (!result?.ok) return json({ error: result?.error || 'Persetujuan pesanan gagal.' }, 409, origin);
+        return json({ ok: true, order: result.order }, 200, origin);
+      }
+
+      const completionMatch = url.pathname.match(/^\/api\/admin\/orders\/([0-9a-f-]{36})\/complete$/i);
+      if (completionMatch && request.method === 'POST') {
+        if (!env.ADMIN_TOKEN) return json({ error: 'Akses admin belum dikonfigurasi.' }, 503, origin);
+        if (!isAdminAuthorized(request, env)) return json({ error: 'Token admin tidak valid.' }, 401, origin);
+        const body = await request.json().catch(() => null);
+        const paymentCode = String(body?.paymentCode || '').trim();
+        if (!/^PNA-\d{8}-[A-F0-9]{8}$/.test(paymentCode)) {
+          return json({ error: 'Kode pembayaran tidak valid.' }, 400, origin);
+        }
+        const result = await appsScript(env, 'completeOrder', { orderId: completionMatch[1], paymentCode });
+        if (!result?.ok) return json({ error: result?.error || 'Pesanan gagal ditandai selesai.' }, 409, origin);
+        return json({ ok: true, order: result.order }, 200, origin);
+      }
+
       if (url.pathname === '/api/destinations' && request.method === 'GET') {
         if (!env.RAJAONGKIR_API_KEY) return json({ error: 'API ongkir belum dikonfigurasi.' }, 503, origin);
         const search = (url.searchParams.get('search') || '').trim();
@@ -231,4 +293,3 @@ export default {
     }
   }
 };
-
