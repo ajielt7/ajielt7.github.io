@@ -45,7 +45,7 @@
   if ('IntersectionObserver' in window && checkoutPanel) {
     new IntersectionObserver(([entry]) => {
       checkoutPanelVisible = entry.isIntersecting;
-      mobileCartShortcut.hidden = cart.size === 0 || checkoutPanelVisible;
+      mobileCartShortcut.hidden = checkoutPanelVisible;
     }, { threshold: 0.12 }).observe(checkoutPanel);
   }
 
@@ -120,7 +120,7 @@
     document.querySelector('#mobile-cart-count').textContent = `${itemCount} produk dipilih`;
     document.querySelector('#mobile-cart-popup-total').textContent = formatRupiah(subtotal);
     const popupItems = document.querySelector('#mobile-cart-popup-items');
-    popupItems.replaceChildren(...entries.map(([id, quantity]) => {
+    popupItems.replaceChildren(...(entries.length ? entries.map(([id, quantity]) => {
       const row = document.createElement('div');
       row.className = 'mobile-cart-popup-line';
       const name = document.createElement('span');
@@ -129,8 +129,11 @@
       price.textContent = formatRupiah(products[id].price * quantity);
       row.append(name, price);
       return row;
-    }));
-    mobileCartShortcut.hidden = itemCount === 0 || checkoutPanelVisible;
+    }) : [Object.assign(document.createElement('p'), {
+      className: 'mobile-cart-popup-empty',
+      textContent: 'Keranjang masih kosong. Pilih produk untuk mulai memesan.'
+    })]));
+    mobileCartShortcut.hidden = checkoutPanelVisible;
     scheduleShippingQuote();
   }
 function scheduleShippingQuote() {
@@ -381,6 +384,7 @@ function scheduleShippingQuote() {
   }
 
   renderProducts();
+  renderCart();
   const destinationInput = document.querySelector('#destination-search');
   destinationInput.addEventListener('input', () => {
     if (searchController) searchController.abort();
