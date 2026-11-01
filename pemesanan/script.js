@@ -4,6 +4,7 @@
   const summaryDialog = document.querySelector('#summary-dialog');
   const dialogBackdrop = document.querySelector('#dialog-backdrop');
   const mobileCartShortcut = document.querySelector('#mobile-cart-shortcut');
+  const mobileCartDialog = document.querySelector('#mobile-cart-dialog');
   const checkoutPanel = document.querySelector('.checkout-panel');
   const productList = [
     ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 x 10 cm', 'PALING DIMINATI'],
@@ -49,7 +50,15 @@
   }
 
   mobileCartShortcut.addEventListener('click', () => {
+    mobileCartDialog.showModal();
+  });
+  document.querySelector('#close-mobile-cart').addEventListener('click', () => mobileCartDialog.close());
+  document.querySelector('#mobile-cart-continue').addEventListener('click', () => {
+    mobileCartDialog.close();
     document.querySelector('#checkout-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  mobileCartDialog.addEventListener('click', (event) => {
+    if (event.target === mobileCartDialog) mobileCartDialog.close();
   });
 
   const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', {
@@ -109,6 +118,18 @@
     document.querySelector('#cart-subtotal').textContent = formatRupiah(subtotal);
     document.querySelector('#mobile-cart-total').textContent = formatRupiah(subtotal);
     document.querySelector('#mobile-cart-count').textContent = `${itemCount} produk dipilih`;
+    document.querySelector('#mobile-cart-popup-total').textContent = formatRupiah(subtotal);
+    const popupItems = document.querySelector('#mobile-cart-popup-items');
+    popupItems.replaceChildren(...entries.map(([id, quantity]) => {
+      const row = document.createElement('div');
+      row.className = 'mobile-cart-popup-line';
+      const name = document.createElement('span');
+      name.textContent = `${products[id].name} × ${quantity}`;
+      const price = document.createElement('strong');
+      price.textContent = formatRupiah(products[id].price * quantity);
+      row.append(name, price);
+      return row;
+    }));
     mobileCartShortcut.hidden = itemCount === 0 || checkoutPanelVisible;
     scheduleShippingQuote();
   }
