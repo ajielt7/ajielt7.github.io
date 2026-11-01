@@ -148,6 +148,7 @@
 .mobile-cart-dialog-head h2{margin:0;font:600 20px var(--display);letter-spacing:-.04em}
 .mobile-cart-dialog-head button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:#f0f2eb;color:var(--green);cursor:pointer}
 .mobile-cart-popup-items{display:grid;gap:0;max-height:45vh;overflow:auto}
+.mobile-cart-popup-empty{margin:0;padding:18px 0;color:var(--muted);font-size:13px;line-height:1.5}
 .mobile-cart-popup-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
 .mobile-cart-popup-line span{min-width:0;color:#535950}
 .mobile-cart-popup-line strong{font:700 12px var(--display);white-space:nowrap}
