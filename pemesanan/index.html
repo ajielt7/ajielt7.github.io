@@ -38,6 +38,11 @@
             <p class="catalog-demo-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Harga dan ukuran masih contoh untuk eksperimen.</p>
             <div class="product-grid" id="product-list" aria-label="Daftar 12 produk nomor rumah"></div>
           </div>
+          <dialog class="mobile-checkout-dialog" id="mobile-checkout-dialog" aria-labelledby="mobile-checkout-title">
+            <div class="mobile-checkout-dialog-head">
+              <h2 id="mobile-checkout-title">Keranjang & alamat</h2>
+              <button type="button" id="close-mobile-checkout" aria-label="Tutup keranjang dan alamat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
           <aside class="checkout-panel" aria-labelledby="checkout-title">
             <div class="checkout-panel-heading"><span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span><div><small id="cart-count-label">KERANJANG</small><h3 id="checkout-title">Keranjang & alamat</h3></div></div>
             <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol “Pilih” pada produk.</p></div>
@@ -60,6 +65,7 @@
             <button class="submit-button" type="submit"><span>Periksa pesanan</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
             <p class="demo-notice" id="form-status" role="status" aria-live="polite">Pesanan belum dikirim.</p>
           </aside>
+          </dialog>
         </div>
       </form>
       <button class="mobile-cart-shortcut" id="mobile-cart-shortcut" type="button" hidden>
@@ -68,16 +74,6 @@
       </button>
     </section>
   </main>
-
-  <dialog class="mobile-cart-dialog" id="mobile-cart-dialog" aria-labelledby="mobile-cart-title">
-    <div class="mobile-cart-dialog-head">
-      <h2 id="mobile-cart-title">Keranjang</h2>
-      <button type="button" id="close-mobile-cart" aria-label="Tutup keranjang"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-    </div>
-    <div id="mobile-cart-popup-items" class="mobile-cart-popup-items"></div>
-    <div class="mobile-cart-popup-total"><span>Subtotal produk</span><strong id="mobile-cart-popup-total">Rp0</strong></div>
-    <button type="button" class="mobile-cart-continue" id="mobile-cart-continue">Lanjut isi alamat <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-  </dialog>
 
   <dialog class="summary-dialog" id="summary-dialog" aria-labelledby="summary-title">
     <div class="dialog-head"><span class="dialog-mark"><i class="fa-solid fa-house" aria-hidden="true"></i></span><button type="button" class="dialog-close" id="close-dialog" aria-label="Tutup ringkasan"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
