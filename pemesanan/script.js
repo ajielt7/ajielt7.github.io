@@ -3,6 +3,8 @@
   const status = document.querySelector('#form-status');
   const summaryDialog = document.querySelector('#summary-dialog');
   const dialogBackdrop = document.querySelector('#dialog-backdrop');
+  const mobileCartShortcut = document.querySelector('#mobile-cart-shortcut');
+  const checkoutPanel = document.querySelector('.checkout-panel');
   const productList = [
     ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 x 10 cm', 'PALING DIMINATI'],
     ['premium', 'Nomor Rumah Premium', 120000, '30 x 15 cm', 'UKURAN BESAR'],
@@ -37,6 +39,18 @@
   let orderRequestId = null;
   let isSubmittingOrder = false;
   let currentOrder = null;
+  let checkoutPanelVisible = false;
+
+  if ('IntersectionObserver' in window && checkoutPanel) {
+    new IntersectionObserver(([entry]) => {
+      checkoutPanelVisible = entry.isIntersecting;
+      mobileCartShortcut.hidden = cart.size === 0 || checkoutPanelVisible;
+    }, { threshold: 0.12 }).observe(checkoutPanel);
+  }
+
+  mobileCartShortcut.addEventListener('click', () => {
+    document.querySelector('#checkout-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
@@ -93,6 +107,9 @@
     }
     const subtotal = entries.reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     document.querySelector('#cart-subtotal').textContent = formatRupiah(subtotal);
+    document.querySelector('#mobile-cart-total').textContent = formatRupiah(subtotal);
+    document.querySelector('#mobile-cart-count').textContent = `${itemCount} produk dipilih`;
+    mobileCartShortcut.hidden = itemCount === 0 || checkoutPanelVisible;
     scheduleShippingQuote();
   }
 function scheduleShippingQuote() {
@@ -260,7 +277,7 @@ function scheduleShippingQuote() {
       chooseCourier(cheapestCourier, false);
       picker.open = false;
       const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
-      weightNote.textContent = `Pilihan termurah dipilih otomatis. Tarif dihitung untuk estimasi berat ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} gram. Ketersediaan layanan kargo mengikuti rute dan hasil RajaOngkir.`;
+      weightNote.textContent = `Tarif untuk ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} g.`;
       rates.append(weightNote);
       setStatus('Tarif termurah dipilih otomatis. Anda bisa memilih jasa kirim atau layanan kargo lain yang tersedia.');
     } catch (error) {
@@ -275,11 +292,14 @@ function scheduleShippingQuote() {
     const list = document.querySelector('#product-list');
     list.replaceChildren(...productList.map((product) => {
       const card = document.createElement('article'); card.className = 'product-card';
+      const media = document.createElement('div'); media.className = 'product-card-media';
       const image = document.createElement('img'); image.src = product.image; image.alt = product.name; image.loading = 'lazy';
-      const body = document.createElement('div'); body.className = 'product-card-body';
-      const badge = document.createElement('span'); badge.className = 'product-tag product-tag-light'; badge.textContent = product.badge;
+      const caption = document.createElement('div'); caption.className = 'product-card-caption';
+      const badge = document.createElement('span'); badge.className = 'product-tag'; badge.textContent = product.badge;
       const title = document.createElement('h3'); title.textContent = product.name;
-      const description = document.createElement('p'); description.textContent = 'Nomor rumah akrilik, dibuat sesuai pilihan Anda.';
+      caption.append(badge, title);
+      media.append(image, caption);
+      const body = document.createElement('div'); body.className = 'product-card-body';
       const bottom = document.createElement('div'); bottom.className = 'product-card-bottom';
       const price = document.createElement('strong'); price.textContent = formatRupiah(product.price);
       const button = document.createElement('button'); button.type = 'button'; button.className = 'add-product';
@@ -287,8 +307,7 @@ function scheduleShippingQuote() {
       button.setAttribute('aria-label', `Pilih ${product.name}`); button.innerHTML = 'Pilih <i class="fa-solid fa-plus" aria-hidden="true"></i>';
       button.addEventListener('click', () => { cart.set(product.id, Math.min(20, (cart.get(product.id) || 0) + 1)); renderCart(); });
       bottom.append(price, button);
-      const size = document.createElement('small'); size.textContent = `Contoh: ${product.size}`;
-      body.append(badge, title, description, bottom, size); card.append(image, body);
+      body.append(bottom); card.append(media, body);
       return card;
     }));
   }
@@ -459,7 +478,6 @@ function scheduleShippingQuote() {
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
 })();
-
 
 
 
