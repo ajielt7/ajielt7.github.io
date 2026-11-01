@@ -142,19 +142,14 @@
 @media(max-width:550px){.checkout-panel{padding:14px}.checkout-fields{gap:8px}.checkout-fields .field input,.checkout-fields .field textarea{min-height:40px;padding:9px 11px;font-size:16px}.checkout-fields .field textarea{min-height:66px}.checkout-panel .checkout-divider{margin:11px 0}.checkout-note p{font-size:10px;line-height:1.45}}
 .mobile-cart-shortcut{display:none}
 @media(max-width:720px){.mobile-cart-shortcut:not([hidden]){position:fixed;z-index:25;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));left:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:64px;padding:10px 16px;border:1px solid #ffffff30;border-radius:13px;background:var(--green);box-shadow:0 12px 32px #20291f35;color:var(--white);text-align:left;cursor:pointer}.mobile-cart-summary{display:grid;gap:3px}.mobile-cart-summary strong{font:700 15px var(--display)}.mobile-cart-summary small{color:#d9e1d5;font:400 10px var(--sans)}.mobile-cart-action{display:flex;align-items:center;gap:9px;font:600 11px var(--sans);white-space:nowrap}.mobile-cart-action i{font-size:10px}}
-.mobile-cart-dialog{width:min(440px,calc(100% - 28px));max-height:min(78vh,620px);margin:auto;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--white);color:var(--ink);box-shadow:0 24px 70px #17231c45}
-.mobile-cart-dialog::backdrop{background:#1b241fd1}
-.mobile-cart-dialog-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.mobile-cart-dialog-head h2{margin:0;font:600 20px var(--display);letter-spacing:-.04em}
-.mobile-cart-dialog-head button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:#f0f2eb;color:var(--green);cursor:pointer}
-.mobile-cart-popup-items{display:grid;gap:0;max-height:45vh;overflow:auto}
-.mobile-cart-popup-empty{margin:0;padding:18px 0;color:var(--muted);font-size:13px;line-height:1.5}
-.mobile-cart-popup-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
-.mobile-cart-popup-line span{min-width:0;color:#535950}
-.mobile-cart-popup-line strong{font:700 12px var(--display);white-space:nowrap}
-.mobile-cart-popup-total{display:flex;justify-content:space-between;gap:12px;padding:15px 0;font-size:12px}
-.mobile-cart-popup-total strong{font:700 16px var(--display)}
-.mobile-cart-continue{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:46px;border:0;border-radius:9px;background:var(--green);color:var(--white);font:600 12px var(--sans);cursor:pointer}
+.mobile-checkout-dialog:not([open]){display:contents}
+.mobile-checkout-dialog:not([open])>.mobile-checkout-dialog-head{display:none}
+.mobile-checkout-dialog[open]{position:fixed;inset:3vh 14px auto;width:min(520px,calc(100% - 28px));max-width:none;max-height:94vh;margin:0 auto;padding:0;border:1px solid var(--line);border-radius:16px;background:var(--white);color:var(--ink);box-shadow:0 24px 70px #17231c45;overflow:hidden}
+.mobile-checkout-dialog[open]::backdrop{background:#1b241fd1}
+.mobile-checkout-dialog-head{display:flex;flex:none;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mobile-checkout-dialog-head h2{margin:0;font:600 18px var(--display);letter-spacing:-.04em}
+.mobile-checkout-dialog-head button{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:#f0f2eb;color:var(--green);cursor:pointer}
+.mobile-checkout-dialog[open] .checkout-panel{width:100%;max-height:calc(94vh - 61px);overflow:auto;border:0;border-radius:0;box-shadow:none}
 @media(max-width:950px){.hero{min-height:550px;gap:5vw}.hero-visual{height:400px}}
 @media(max-width:650px){.hero{padding-top:47px;padding-bottom:48px}.hero-visual{height:320px}.order-section{padding-top:66px;padding-bottom:72px}.product-card{box-shadow:none}.product-card:hover{transform:none}.intro-strip{min-height:0}.site-header{backdrop-filter:blur(10px)}}
 .product-card{display:flex;flex-direction:column;overflow:hidden}
