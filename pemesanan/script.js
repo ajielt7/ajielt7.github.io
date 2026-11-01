@@ -4,18 +4,18 @@
   const summaryDialog = document.querySelector('#summary-dialog');
   const dialogBackdrop = document.querySelector('#dialog-backdrop');
   const productList = [
-    ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 � 10 cm', 'PALING DIMINATI'],
-    ['premium', 'Nomor Rumah Premium', 120000, '30 � 15 cm', 'UKURAN BESAR'],
+    ['minimalis', 'Nomor Rumah Minimalis', 75000, '20 x 10 cm', 'PALING DIMINATI'],
+    ['premium', 'Nomor Rumah Premium', 120000, '30 x 15 cm', 'UKURAN BESAR'],
     ['custom', 'Nomor Rumah Custom', 150000, 'Ukuran sesuai pesanan', 'BEBAS CUSTOM'],
-    ['akrilik-hitam', 'Akrilik Hitam Elegan', 85000, '20 � 10 cm', 'WARNA HITAM'],
-    ['akrilik-putih', 'Akrilik Putih Minimal', 85000, '20 � 10 cm', 'WARNA PUTIH'],
-    ['akrilik-emas', 'Akrilik Nuansa Emas', 95000, '20 � 10 cm', 'AKSEN EMAS'],
-    ['akrilik-silver', 'Akrilik Silver Modern', 95000, '20 � 10 cm', 'AKSEN SILVER'],
-    ['nomor-timbul', 'Nomor Timbul 3D', 135000, '30 � 15 cm', 'MODEL TIMBUL'],
-    ['nomor-dobel', 'Nomor Lapis Ganda', 165000, '30 � 15 cm', 'DUA LAPIS'],
-    ['nomor-led', 'Nomor Rumah LED', 250000, '30 � 15 cm', 'DENGAN LAMPU'],
-    ['nomor-jalan', 'Nomor + Nama Jalan', 185000, '30 � 15 cm', 'PAKET LENGKAP'],
-    ['nomor-keluarga', 'Nomor + Nama Keluarga', 175000, '30 � 15 cm', 'PERSONAL']
+    ['akrilik-hitam', 'Akrilik Hitam Elegan', 85000, '20 x 10 cm', 'WARNA HITAM'],
+    ['akrilik-putih', 'Akrilik Putih Minimal', 85000, '20 x 10 cm', 'WARNA PUTIH'],
+    ['akrilik-emas', 'Akrilik Nuansa Emas', 95000, '20 x 10 cm', 'AKSEN EMAS'],
+    ['akrilik-silver', 'Akrilik Silver Modern', 95000, '20 x 10 cm', 'AKSEN SILVER'],
+    ['nomor-timbul', 'Nomor Timbul 3D', 135000, '30 x 15 cm', 'MODEL TIMBUL'],
+    ['nomor-dobel', 'Nomor Lapis Ganda', 165000, '30 x 15 cm', 'DUA LAPIS'],
+    ['nomor-led', 'Nomor Rumah LED', 250000, '30 x 15 cm', 'DENGAN LAMPU'],
+    ['nomor-jalan', 'Nomor + Nama Jalan', 185000, '30 x 15 cm', 'PAKET LENGKAP'],
+    ['nomor-keluarga', 'Nomor + Nama Keluarga', 175000, '30 x 15 cm', 'PERSONAL']
   ].map(([id, name, price, size, badge], index) => ({
     id, name, price, size, badge,
     image: [
@@ -51,10 +51,20 @@
     document.querySelector('#shipping-rates').replaceChildren();
     const list = document.querySelector('#cart-items');
     const entries = [...cart.entries()];
+    const itemCount = entries.reduce((sum, [, quantity]) => sum + quantity, 0);
+    document.querySelector('#cart-count-label').textContent = itemCount
+      ? `KERANJANG · ${itemCount} PRODUK` : 'KERANJANG ANDA';
+    document.querySelectorAll('[data-product-id]').forEach((button) => {
+      const quantity = cart.get(button.dataset.productId) || 0;
+      button.classList.toggle('is-added', quantity > 0);
+      button.innerHTML = quantity
+        ? `Ditambahkan (${quantity}) <i class="fa-solid fa-check" aria-hidden="true"></i>`
+        : 'Tambah <i class="fa-solid fa-plus" aria-hidden="true"></i>';
+    });
     if (!entries.length) {
       const empty = document.createElement('p');
       empty.className = 'cart-empty';
-      empty.innerHTML = 'Belum ada produk dipilih.<br>Klik tombol �Pilih� pada produk.';
+      empty.innerHTML = 'Belum ada produk dipilih.<br>Klik tombol Pilih pada produk.';
       list.replaceChildren(empty);
     } else {
       list.replaceChildren(...entries.map(([id, quantity]) => {
@@ -90,7 +100,7 @@ function scheduleShippingQuote() {
       if (quoteController) quoteController.abort();
       return;
     }
-    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir�');
+    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir...');
     quoteTimer = setTimeout(calculateShipping, 700);
   }
 
@@ -273,6 +283,7 @@ function scheduleShippingQuote() {
       const bottom = document.createElement('div'); bottom.className = 'product-card-bottom';
       const price = document.createElement('strong'); price.textContent = formatRupiah(product.price);
       const button = document.createElement('button'); button.type = 'button'; button.className = 'add-product';
+      button.dataset.productId = product.id;
       button.setAttribute('aria-label', `Pilih ${product.name}`); button.innerHTML = 'Pilih <i class="fa-solid fa-plus" aria-hidden="true"></i>';
       button.addEventListener('click', () => { cart.set(product.id, Math.min(20, (cart.get(product.id) || 0) + 1)); renderCart(); });
       bottom.append(price, button);
@@ -290,7 +301,7 @@ function scheduleShippingQuote() {
   function showSummary(data, savedOrder) {
     currentOrder = savedOrder;
     const cartDescription = [...cart.entries()].map(([id, quantity]) =>
-      `${products[id].name} � ${quantity} � ${formatRupiah(products[id].price * quantity)}`
+      `${products[id].name} x ${quantity} x ${formatRupiah(products[id].price * quantity)}`
     ).join('; ');
     const subtotal = [...cart.entries()].reduce((sum, [id, quantity]) => sum + products[id].price * quantity, 0);
     const rows = [
@@ -448,4 +459,7 @@ function scheduleShippingQuote() {
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
 })();
+
+
+
 
