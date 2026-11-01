@@ -25,15 +25,15 @@
       <div class="hero-copy">
         <span class="eyebrow"><span class="eyebrow-line"></span> NOMOR RUMAH AKRILIK</span>
         <h1 id="hero-title">Detail kecil,<br>kesan <em>pertama.</em></h1>
-        <p class="hero-lead">Nomor rumah yang dirancang menyatu dengan karakter rumahmuâ€”sederhana, jelas, dan terasa personal.</p>
+        <p class="hero-lead">Nomor rumah yang dirancang menyatu dengan karakter rumahmu—sederhana, jelas, dan terasa personal.</p>
         <a class="primary-link" href="#koleksi">Temukan pilihanmu <span class="link-circle"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span></a>
         <div class="hero-caption"><span class="caption-rule"></span> Dibuat untuk menyambut setiap langkah pulang.</div>
       </div>
       <div class="hero-visual">
         <img class="hero-image" src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&amp;fit=crop&amp;w=1200&amp;q=85" alt="Teras rumah dengan detail arsitektur yang hangat" fetchpriority="high">
         <div class="image-shade" aria-hidden="true"></div>
-        <div class="number-plaque" aria-label="Contoh nomor rumah Ruma"><span>RUMA Â· NOMOR RUMAH</span><strong>08<span>.</span></strong><small>AKRILIK Â· MADE FOR HOME</small></div>
-        <div class="image-note"><span class="note-star">âœ³</span><span>Awali kesan rumahmu<br>dari detail yang tepat.</span></div>
+        <div class="number-plaque" aria-label="Contoh nomor rumah Ruma"><span>RUMA · NOMOR RUMAH</span><strong>08<span>.</span></strong><small>AKRILIK · MADE FOR HOME</small></div>
+        <div class="image-note"><span class="note-star">✳</span><span>Awali kesan rumahmu<br>dari detail yang tepat.</span></div>
         <div class="hero-image-index">01 <span></span> 03</div>
         <div class="hero-side-label">DETAIL YANG MENYAMBUTMU PULANG</div>
       </div>
@@ -64,19 +64,19 @@
           </div>
           <aside class="checkout-panel" aria-labelledby="checkout-title">
             <div class="checkout-panel-heading"><span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span><div><small id="cart-count-label">KERANJANG</small><h3 id="checkout-title">Keranjang & alamat</h3></div></div>
-            <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol â€œPilihâ€ pada produk.</p></div>
+            <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol “Pilih” pada produk.</p></div>
             <div class="cart-total"><span>Subtotal produk</span><strong id="cart-subtotal">Rp0</strong></div>
             <div class="checkout-divider"></div>
-            <div class="form-section-heading checkout-subheading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3><p>Untuk konfirmasi dan pengiriman.</p></div></div>
+            <div class="form-section-heading checkout-subheading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3></div></div>
             <div class="checkout-fields">
-              <label class="field">Nama lengkap <span class="required">*</span><input name="customerName" required autocomplete="name" placeholder="Nama penerima"></label>
-              <label class="field">Nomor WhatsApp <span class="required">*</span><input name="phone" type="tel" required autocomplete="tel" placeholder="08xx xxxx xxxx"></label>
-              <label class="field">Alamat lengkap <span class="required">*</span><textarea name="address" rows="3" required autocomplete="street-address" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan, kota/kabupaten, kode pos"></textarea></label>
-              <label class="field">Kota atau kecamatan tujuan <span class="required">*</span><input id="destination-search" type="search" autocomplete="off" placeholder="Ketik, misalnya: Cileunyi, Bandung" aria-describedby="destination-help"><small id="destination-help">Pilih satu hasil agar ongkir dapat dihitung.</small><div class="destination-results" id="destination-results" role="listbox" aria-label="Hasil pencarian lokasi"></div></label>
+              <label class="field"><span class="sr-only">Nama lengkap (wajib)</span><input name="customerName" required autocomplete="name" aria-label="Nama lengkap" placeholder="Nama lengkap"></label>
+              <label class="field"><span class="sr-only">Nomor WhatsApp (wajib)</span><input name="phone" type="tel" required autocomplete="tel" aria-label="Nomor WhatsApp" placeholder="Nomor WhatsApp"></label>
+              <label class="field"><span class="sr-only">Alamat lengkap (wajib)</span><textarea name="address" rows="3" required autocomplete="street-address" aria-label="Alamat lengkap" placeholder="Alamat lengkap"></textarea></label>
+              <label class="field"><span class="sr-only">Kota atau kecamatan tujuan (wajib)</span><input id="destination-search" type="search" autocomplete="off" placeholder="Kota atau kecamatan tujuan" aria-label="Kota atau kecamatan tujuan"><div class="destination-results" id="destination-results" role="listbox" aria-label="Hasil pencarian lokasi"></div></label>
             </div>
             <input type="hidden" id="destination-id" name="destinationId">
             <div class="shipping-quote">
-              <small class="shipping-weight-note">Berat estimasi prototipe: 500 gram per produk, termasuk kemasan.</small>
+              <small class="shipping-weight-note">Berat hitung: 500 g per produk.</small>
               <div class="shipping-rates" id="shipping-rates" aria-live="polite"></div>
             </div>
             <div class="checkout-divider"></div>
@@ -86,6 +86,10 @@
           </aside>
         </div>
       </form>
+      <button class="mobile-cart-shortcut" id="mobile-cart-shortcut" type="button" hidden>
+        <span class="mobile-cart-summary"><strong id="mobile-cart-total">Rp0</strong><small id="mobile-cart-count">0 produk dipilih</small></span>
+        <span class="mobile-cart-action">Lihat keranjang <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+      </button>
     </section>
 
     <section class="how-section" id="cara-pesan" aria-labelledby="how-title">
@@ -123,4 +127,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
