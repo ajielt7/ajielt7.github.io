@@ -64,10 +64,20 @@
       </form>
       <button class="mobile-cart-shortcut" id="mobile-cart-shortcut" type="button" hidden>
         <span class="mobile-cart-summary"><strong id="mobile-cart-total">Rp0</strong><small id="mobile-cart-count">0 produk dipilih</small></span>
-        <span class="mobile-cart-action">Lihat keranjang <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></span>
+        <span class="mobile-cart-action"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Lihat keranjang</span>
       </button>
     </section>
   </main>
+
+  <dialog class="mobile-cart-dialog" id="mobile-cart-dialog" aria-labelledby="mobile-cart-title">
+    <div class="mobile-cart-dialog-head">
+      <h2 id="mobile-cart-title">Keranjang</h2>
+      <button type="button" id="close-mobile-cart" aria-label="Tutup keranjang"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <div id="mobile-cart-popup-items" class="mobile-cart-popup-items"></div>
+    <div class="mobile-cart-popup-total"><span>Subtotal produk</span><strong id="mobile-cart-popup-total">Rp0</strong></div>
+    <button type="button" class="mobile-cart-continue" id="mobile-cart-continue">Lanjut isi alamat <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+  </dialog>
 
   <dialog class="summary-dialog" id="summary-dialog" aria-labelledby="summary-title">
     <div class="dialog-head"><span class="dialog-mark"><i class="fa-solid fa-house" aria-hidden="true"></i></span><button type="button" class="dialog-close" id="close-dialog" aria-label="Tutup ringkasan"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
