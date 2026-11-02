@@ -503,7 +503,7 @@ function scheduleShippingQuote() {
     proofFileInput.disabled = false;
     const proofUploadButton = document.querySelector('#upload-proof-button');
     proofUploadButton.disabled = true;
-    proofUploadButton.textContent = 'Pesan Sekarang';
+    proofUploadButton.textContent = 'Unggah bukti pembayaran';
     const proofUploadStatus = document.querySelector('#proof-upload-status');
     proofUploadStatus.textContent = '';
     proofUploadStatus.classList.remove('error');
@@ -530,7 +530,7 @@ function scheduleShippingQuote() {
     document.querySelector('#proof-upload-status').textContent = '';
     const uploadProofButton = document.querySelector('#upload-proof-button');
     uploadProofButton.disabled = true;
-    uploadProofButton.textContent = 'Pesan Sekarang';
+    uploadProofButton.textContent = 'Unggah bukti pembayaran';
     if (destinationMarker) {
       destinationMarker.remove();
       destinationMarker = null;
@@ -654,13 +654,23 @@ function scheduleShippingQuote() {
   const proofUploadButton = document.querySelector('#upload-proof-button');
   const proofUploadStatus = document.querySelector('#proof-upload-status');
   proofFileInput.addEventListener('change', () => {
-    proofUploadButton.disabled = !proofFileInput.files?.length;
-    proofUploadStatus.textContent = proofFileInput.files?.length ? `Dipilih: ${proofFileInput.files[0].name}` : '';
-    proofUploadStatus.classList.remove('error');
+    const file = proofFileInput.files?.[0];
+    const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const validFile = file && supportedTypes.includes(file.type) && file.size <= 5 * 1024 * 1024;
+    proofUploadButton.disabled = !validFile;
+    proofUploadStatus.textContent = !file ? '' : validFile
+      ? `Dipilih: ${file.name}`
+      : 'Pilih gambar JPG, PNG, atau WebP dengan ukuran maksimal 5 MB.';
+    proofUploadStatus.classList.toggle('error', Boolean(file && !validFile));
   });
   proofUploadButton.addEventListener('click', async () => {
     const file = proofFileInput.files?.[0];
     if (!file || !currentOrder) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      proofUploadStatus.textContent = 'Pilih gambar JPG, PNG, atau WebP dengan ukuran maksimal 5 MB.';
+      proofUploadStatus.classList.add('error');
+      return;
+    }
     const upload = new FormData();
     upload.append('orderId', currentOrder.orderId);
     upload.append('paymentCode', currentOrder.paymentCode);
@@ -675,7 +685,7 @@ function scheduleShippingQuote() {
       const response = await fetch(`${API_BASE}/api/orders/proof`, { method: 'POST', body: upload });
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || 'Bukti belum berhasil diunggah.');
-      proofUploadStatus.textContent = 'Bukti berhasil diunggah. Mengosongkan formulir...';
+      proofUploadStatus.textContent = 'Bukti berhasil diunggah. Pesanan dapat dilanjutkan.';
       window.alert(`Pesanan ${currentOrder.paymentCode} berhasil dibuat dan bukti pembayaran berhasil diunggah.`);
       resetOrderForm();
     } catch (error) {
@@ -683,7 +693,7 @@ function scheduleShippingQuote() {
       proofUploadStatus.classList.add('error');
       proofFileInput.disabled = false;
       proofUploadButton.disabled = false;
-      proofUploadButton.textContent = 'Pesan Sekarang';
+      proofUploadButton.textContent = 'Unggah bukti pembayaran';
     }
   });
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
