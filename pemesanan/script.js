@@ -88,12 +88,17 @@
       mobileCartShortcut.hidden = checkoutPanelVisible;
     }, { threshold: 0.12 }).observe(checkoutPanel);
   }
+  if (window.matchMedia('(max-width: 720px)').matches) mobileCartShortcut.hidden = false;
 
   mobileCartShortcut.addEventListener('click', () => {
+    mobileCartShortcut.hidden = true;
     mobileCheckoutDialog.showModal();
     setTimeout(() => routeMap.resize(), 100);
   });
   document.querySelector('#close-mobile-checkout').addEventListener('click', () => mobileCheckoutDialog.close());
+  mobileCheckoutDialog.addEventListener('close', () => {
+    if (window.matchMedia('(max-width: 720px)').matches) mobileCartShortcut.hidden = false;
+  });
   mobileCheckoutDialog.addEventListener('click', (event) => {
     if (event.target === mobileCheckoutDialog) mobileCheckoutDialog.close();
   });
