@@ -31,10 +31,14 @@
   const cart = new Map();
   const API_BASE = 'https://pemesanan-api.ajielt7.workers.dev';
   let selectedDestination = null;
+  let selectedArea = null;
   let selectedRate = null;
   let quoteTimer = null;
   let quoteController = null;
   let quoteRequestId = 0;
+  let destinationSearchTimer = null;
+  let destinationSearchController = null;
+  let destinationSearchRequestId = 0;
   let orderRequestId = null;
   let isSubmittingOrder = false;
   let currentOrder = null;
@@ -42,6 +46,8 @@
 
   const destinationInput = document.querySelector('#destination-search');
   const destinationCoordinates = document.querySelector('#destination-coordinates');
+  const destinationResults = document.querySelector('#destination-results');
+  const destinationSelectionStatus = document.querySelector('#destination-selection-status');
   const routeMap = new maplibregl.Map({
     container: 'destination-map',
     style: 'https://tiles.openfreemap.org/styles/liberty',
@@ -54,7 +60,7 @@
 
   function chooseDestinationPoint(latitude, longitude) {
     selectedDestination = {
-      id: '', label: destinationInput.value.trim(),
+      id: selectedArea?.id || '', label: selectedArea?.label || destinationInput.value.trim(),
       latitude: Number(latitude), longitude: Number(longitude)
     };
     orderRequestId = null;
@@ -155,9 +161,11 @@
 function scheduleShippingQuote() {
     if (!selectedDestination || cart.size === 0) {
       if (quoteController) quoteController.abort();
+      document.querySelector('#shipping-rates').replaceChildren();
+      selectedRate = null;
       return;
     }
-    setStatus('Menghitung jarak dan ongkir dari titik toko...');
+    setStatus('Membandingkan ongkir Gojek dan ekspedisi...');
     quoteTimer = setTimeout(calculateShipping, 700);
   }
 
@@ -170,30 +178,162 @@ function scheduleShippingQuote() {
     const rates = document.querySelector('#shipping-rates');
     selectedRate = null;
     rates.replaceChildren();
-    try {
-      const response = await fetch(`${API_BASE}/api/route-distance`, {
+    const routeRequest = fetch(`${API_BASE}/api/route-distance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ latitude: selectedDestination.latitude, longitude: selectedDestination.longitude }),
         signal: quoteController.signal
+      }).then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Jarak rute belum dapat dihitung.');
+        return result;
+      });
+    const courierRequest = selectedArea
+      ? fetch(`${API_BASE}/api/shipping-cost`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destinationId: selectedArea.id, items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })) }),
+        signal: quoteController.signal
+      }).then(async (response) => {
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Tarif ekspedisi belum dapat dimuat.');
+        return Array.isArray(result.data) ? result.data : [];
+      })
+      : Promise.resolve([]);
+
+    const [routeResult, courierResult] = await Promise.allSettled([routeRequest, courierRequest]);
+    if (requestId !== quoteRequestId) return;
+
+    const options = [];
+    const messages = [];
+    let routeDistanceKm = null;
+    if (routeResult.status === 'fulfilled') {
+      const route = routeResult.value;
+      routeDistanceKm = Number(route.distanceKm);
+      selectedDestination.distanceKm = routeDistanceKm;
+      if (routeDistanceKm < 30) {
+        options.push({
+          code: 'gojek', name: 'Gojek', service: 'Same Day',
+          description: `${routeDistanceKm} km · 4 km pertama Rp10.000, selanjutnya Rp2.500/km`,
+          cost: Number(route.shippingCost), routeDistanceKm
+        });
+      } else {
+        messages.push('Gojek Same Day hanya tersedia untuk jarak di bawah 30 km.');
+      }
+    } else {
+      selectedDestination.distanceKm = null;
+      messages.push(routeResult.reason?.message || 'Jarak rute belum dapat dihitung.');
+    }
+
+    if (courierResult.status === 'fulfilled') {
+      for (const rate of courierResult.value) {
+        const cost = Number(rate.cost);
+        const code = String(rate.code || '').toLowerCase();
+        const service = String(rate.service || '').trim();
+        if (!code || !service || !Number.isSafeInteger(cost) || cost < 0) continue;
+        options.push({
+          code, name: String(rate.name || code.toUpperCase()), service,
+          description: [rate.description, rate.etd ? `Estimasi ${rate.etd}` : ''].filter(Boolean).join(' · '),
+          cost
+        });
+      }
+      if (!courierResult.value.length) messages.push('Tidak ada layanan ekspedisi untuk kecamatan ini.');
+    } else if (selectedArea) {
+      messages.push(courierResult.reason?.message || 'Tarif ekspedisi belum dapat dimuat.');
+    } else {
+      messages.push('Pilih kecamatan dari saran untuk melihat tarif ekspedisi RajaOngkir.');
+    }
+
+    options.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name));
+    if (options.length) {
+      selectedRate = options[0];
+      rates.replaceChildren(...options.map((rate, index) => {
+        const line = document.createElement('label');
+        line.className = `shipping-rate-option${index === 0 ? ' selected' : ''}`;
+        const radio = document.createElement('input');
+        radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.checked = index === 0;
+        const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
+        const title = document.createElement('strong'); title.textContent = `${rate.name} · ${rate.service}`;
+        const detail = document.createElement('small'); detail.textContent = rate.description || 'Tarif ekspedisi';
+        const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(rate.cost);
+        copy.append(title, detail); line.append(radio, copy, price);
+        radio.addEventListener('change', () => {
+          selectedRate = rate;
+          rates.querySelectorAll('.shipping-rate-option').forEach((option) => option.classList.remove('selected'));
+          line.classList.add('selected');
+          setStatus(`${rate.name} ${rate.service} dipilih · ${formatRupiah(rate.cost)}.`);
+        });
+        return line;
+      }));
+    } else {
+      selectedRate = null;
+      rates.replaceChildren();
+    }
+    if (messages.length) {
+      const note = document.createElement('p');
+      note.className = routeResult.status === 'rejected' && courierResult.status === 'rejected' ? 'shipping-error' : 'shipping-result-note';
+      note.textContent = messages.join(' ');
+      rates.append(note);
+    }
+    if (selectedRate) {
+      const distance = Number.isFinite(routeDistanceKm) ? ` Jarak jalan ${routeDistanceKm} km.` : '';
+      setStatus(`Opsi termurah ${selectedRate.name} ${selectedRate.service}, ${formatRupiah(selectedRate.cost)}.${distance}`);
+    } else {
+      setStatus(messages.join(' ') || 'Belum ada layanan pengiriman untuk titik ini.', true);
+    }
+  }
+
+  function showDestinationResults(locations, message = '') {
+    destinationResults.replaceChildren();
+    destinationResults.hidden = false;
+    if (!locations.length) {
+      const empty = document.createElement('div');
+      empty.className = 'destination-empty';
+      empty.textContent = message || 'Lokasi tidak ditemukan.';
+      destinationResults.append(empty);
+      return;
+    }
+    locations.forEach((location) => {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'destination-option';
+      option.role = 'option';
+      option.textContent = location.label;
+      option.addEventListener('click', () => {
+        selectedArea = { id: String(location.id), label: String(location.label) };
+        destinationInput.value = selectedArea.label;
+        destinationSelectionStatus.textContent = 'Lokasi ekspedisi dipilih';
+        destinationResults.hidden = true;
+        destinationResults.replaceChildren();
+        orderRequestId = null;
+        if (selectedDestination) {
+          selectedDestination.id = selectedArea.id;
+          selectedDestination.label = selectedArea.label;
+          scheduleShippingQuote();
+        }
+      });
+      destinationResults.append(option);
+    });
+  }
+
+  async function searchDestinations(query) {
+    if (destinationSearchController) destinationSearchController.abort();
+    destinationSearchController = new AbortController();
+    const requestId = ++destinationSearchRequestId;
+    try {
+      const response = await fetch(`${API_BASE}/api/destinations?search=${encodeURIComponent(query)}`, {
+        signal: destinationSearchController.signal
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Jarak rute belum dapat dihitung.');
-      if (requestId !== quoteRequestId) return;
-      selectedRate = { code: 'local', name: 'Pengantaran toko', service: 'Tarif berdasarkan jarak jalan', cost: Number(result.shippingCost) };
-      const line = document.createElement('div'); line.className = 'shipping-rate-option selected';
-      const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-      const title = document.createElement('strong'); title.textContent = `Jarak rute ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(result.distanceKm)} km`;
-      const detail = document.createElement('small'); detail.textContent = '4 km pertama Rp10.000, selanjutnya Rp2.500 per km (dibulatkan ke atas)';
-      const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(selectedRate.cost);
-      copy.append(title, detail); line.append(copy, price); rates.replaceChildren(line);
-      selectedDestination.distanceKm = Number(result.distanceKm);
-      setStatus(`Ongkir pengantaran dihitung dari jarak rute ${result.distanceKm} km.`);
+      if (!response.ok) throw new Error(result.error || 'Pencarian lokasi gagal.');
+      if (requestId !== destinationSearchRequestId) return;
+      const locations = (Array.isArray(result.data) ? result.data : [])
+        .filter((location) => location?.id && location?.label)
+        .slice(0, 10);
+      showDestinationResults(locations, locations.length ? '' : 'Lokasi tidak ditemukan. Coba nama kecamatan atau kode pos.');
     } catch (error) {
-      if (error.name === 'AbortError' || requestId !== quoteRequestId) return;
-      const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Jarak rute belum dapat dihitung.';
-      rates.replaceChildren(message);
-      setStatus(error.message || 'Ongkir belum dapat dihitung.', true);
+      if (error.name === 'AbortError' || requestId !== destinationSearchRequestId) return;
+      showDestinationResults([], error.message || 'Pencarian lokasi gagal.');
     }
   }
 
@@ -240,7 +380,9 @@ function scheduleShippingQuote() {
       ['Alamat', data.get('address')],
       ['Lokasi tujuan', selectedDestination.label],
       ['Pengiriman', `${selectedRate.name || selectedRate.code} ${selectedRate.service || ''}`.trim()],
-      ['Jarak rute', `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(selectedDestination.distanceKm))} km`],
+      ['Jarak rute', Number.isFinite(Number(selectedDestination.distanceKm)) && selectedDestination.distanceKm !== null
+        ? `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(selectedDestination.distanceKm))} km`
+        : 'Tidak tersedia'],
       ['Ongkir', formatRupiah(Number(savedOrder.shippingCost))],
       ['Kode pembayaran', savedOrder.paymentCode],
       ['Total transfer', formatRupiah(Number(savedOrder.total))],
@@ -272,14 +414,35 @@ function scheduleShippingQuote() {
   renderProducts();
   renderCart();
   destinationInput.addEventListener('input', () => {
+    selectedArea = null;
+    destinationSelectionStatus.textContent = '';
+    destinationSearchRequestId += 1;
+    if (destinationSearchController) destinationSearchController.abort();
+    clearTimeout(destinationSearchTimer);
+    const query = destinationInput.value.trim();
+    if (query.length >= 3) {
+      destinationSearchTimer = setTimeout(() => searchDestinations(query), 350);
+    } else {
+      destinationResults.hidden = true;
+      destinationResults.replaceChildren();
+    }
     clearTimeout(quoteTimer);
     if (quoteController) quoteController.abort();
     quoteRequestId += 1;
     orderRequestId = null;
-    if (selectedDestination) selectedDestination.label = destinationInput.value.trim();
+    if (selectedDestination) {
+      selectedDestination.id = '';
+      selectedDestination.label = query;
+    }
     selectedRate = null;
     document.querySelector('#shipping-rates').replaceChildren();
     if (selectedDestination) scheduleShippingQuote();
+  });
+  destinationInput.addEventListener('focus', () => {
+    if (destinationInput.value.trim().length >= 3 && !selectedArea) searchDestinations(destinationInput.value.trim());
+  });
+  document.addEventListener('click', (event) => {
+    if (!destinationResults.contains(event.target) && event.target !== destinationInput) destinationResults.hidden = true;
   });
   form.addEventListener('input', () => { if (!isSubmittingOrder) orderRequestId = null; });
   form.addEventListener('submit', async (event) => {
@@ -292,8 +455,17 @@ function scheduleShippingQuote() {
       return;
     }
     if (!selectedDestination || !selectedDestination.label) {
-      setStatus('Isi kota atau kecamatan, lalu pilih titik tujuan pada peta.', true);
+      setStatus('Pilih kecamatan dari saran, lalu pasang pin alamat pada peta.', true);
       destinationInput.focus();
+      return;
+    }
+    if (selectedRate?.code !== 'gojek' && !selectedArea) {
+      setStatus('Pilih kecamatan dari saran RajaOngkir sebelum memakai ekspedisi.', true);
+      destinationInput.focus();
+      return;
+    }
+    if (selectedRate?.code === 'gojek' && !(Number(selectedDestination.distanceKm) < 30)) {
+      setStatus('Gojek Same Day hanya tersedia untuk jarak di bawah 30 km.', true);
       return;
     }
     if (!selectedRate) {
