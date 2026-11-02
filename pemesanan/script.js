@@ -301,7 +301,8 @@ function scheduleShippingQuote() {
         const packageHint = document.createElement('small');
         const updateGroupSummary = () => {
           const chosen = group.rates.find((rate) => rate === selectedRate);
-          packageHint.textContent = chosen ? `Dipilih · ${chosen.service}` : `${group.rates.length} paket tersedia`;
+          packageHint.textContent = chosen ? `Dipilih · ${chosen.service}` : '';
+          packageHint.hidden = !chosen;
         };
         updateGroupSummary();
         summary.append(name, lowest, packageHint);
@@ -327,7 +328,8 @@ function scheduleShippingQuote() {
                 groupElement.open = false;
                 const hint = groupElement.querySelector('.shipping-courier-choice small');
                 const chosen = entry.rates.find((candidate) => candidate === selectedRate);
-                hint.textContent = chosen ? `Dipilih · ${chosen.service}` : `${entry.rates.length} paket tersedia`;
+                hint.textContent = chosen ? `Dipilih · ${chosen.service}` : '';
+                hint.hidden = !chosen;
               }
             });
             updatePickerSummary();
