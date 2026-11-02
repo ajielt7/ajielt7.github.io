@@ -32,8 +32,6 @@
   const API_BASE = 'https://pemesanan-api.ajielt7.workers.dev';
   let selectedDestination = null;
   let selectedRate = null;
-  let searchTimer = null;
-  let searchController = null;
   let quoteTimer = null;
   let quoteController = null;
   let quoteRequestId = 0;
@@ -41,6 +39,34 @@
   let isSubmittingOrder = false;
   let currentOrder = null;
   let checkoutPanelVisible = false;
+
+  const destinationInput = document.querySelector('#destination-search');
+  const destinationCoordinates = document.querySelector('#destination-coordinates');
+  const routeMap = L.map('destination-map').setView([-6.9298300251, 107.7430814007], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(routeMap);
+  let destinationMarker = null;
+
+  function chooseDestinationPoint(latitude, longitude) {
+    selectedDestination = {
+      id: '', label: destinationInput.value.trim(),
+      latitude: Number(latitude), longitude: Number(longitude)
+    };
+    orderRequestId = null;
+    if (!destinationMarker) {
+      destinationMarker = L.marker([latitude, longitude], { draggable: true }).addTo(routeMap);
+      destinationMarker.on('dragend', () => {
+        const point = destinationMarker.getLatLng();
+        chooseDestinationPoint(point.lat, point.lng);
+      });
+    } else destinationMarker.setLatLng([latitude, longitude]);
+    destinationCoordinates.textContent = `Pin: ${Number(latitude).toFixed(6)}, ${Number(longitude).toFixed(6)}`;
+    scheduleShippingQuote();
+  }
+
+  routeMap.on('click', (event) => chooseDestinationPoint(event.latlng.lat, event.latlng.lng));
 
   if ('IntersectionObserver' in window && checkoutPanel) {
     new IntersectionObserver(([entry]) => {
@@ -51,6 +77,7 @@
 
   mobileCartShortcut.addEventListener('click', () => {
     mobileCheckoutDialog.showModal();
+    setTimeout(() => routeMap.invalidateSize(), 100);
   });
   document.querySelector('#close-mobile-checkout').addEventListener('click', () => mobileCheckoutDialog.close());
   mobileCheckoutDialog.addEventListener('click', (event) => {
@@ -122,51 +149,8 @@ function scheduleShippingQuote() {
       if (quoteController) quoteController.abort();
       return;
     }
-    setStatus('Alamat tujuan dipilih. Menyiapkan perbandingan ongkir...');
+    setStatus('Menghitung jarak dan ongkir dari titik toko...');
     quoteTimer = setTimeout(calculateShipping, 700);
-  }
-
-  function destinationLabel(item) {
-    return item.label || [item.subdistrict, item.district, item.city, item.province, item.zip_code].filter(Boolean).join(', ');
-  }
-
-  async function searchDestinations(search) {
-    const results = document.querySelector('#destination-results');
-    if (searchController) searchController.abort();
-    searchController = new AbortController();
-    try {
-      const cacheSearch = search.normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('id-ID');
-      const response = await fetch(`${API_BASE}/api/destinations?search=${encodeURIComponent(cacheSearch)}`, { signal: searchController.signal });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Pencarian lokasi gagal.');
-      results.replaceChildren();
-      if (!result.data?.length) {
-        const empty = document.createElement('span'); empty.className = 'destination-empty'; empty.textContent = 'Lokasi tidak ditemukan.';
-        results.append(empty);
-        return;
-      }
-      result.data.forEach((location) => {
-        const option = document.createElement('button'); option.type = 'button'; option.className = 'destination-option';
-        option.setAttribute('role', 'option'); option.textContent = destinationLabel(location);
-        option.addEventListener('click', () => {
-          selectedDestination = { id: String(location.id), label: destinationLabel(location) };
-          orderRequestId = null;
-          if (quoteController) quoteController.abort();
-          quoteRequestId += 1;
-          document.querySelector('#destination-search').value = selectedDestination.label;
-          document.querySelector('#destination-id').value = selectedDestination.id;
-          results.replaceChildren();
-          document.querySelector('#shipping-rates').replaceChildren();
-          selectedRate = null;
-          scheduleShippingQuote();
-        });
-        results.append(option);
-      });
-    } catch (error) {
-      if (error.name === 'AbortError') return;
-      results.replaceChildren();
-      setStatus(error.message || 'Layanan pencarian lokasi sedang tidak tersedia.', true);
-    }
   }
 
   async function calculateShipping() {
@@ -179,115 +163,27 @@ function scheduleShippingQuote() {
     selectedRate = null;
     rates.replaceChildren();
     try {
-      const response = await fetch(`${API_BASE}/api/shipping-cost`, {
+      const response = await fetch(`${API_BASE}/api/route-distance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destinationId: selectedDestination.id, items: [...cart.entries()].map(([id, quantity]) => ({ id, quantity })) }),
+        body: JSON.stringify({ latitude: selectedDestination.latitude, longitude: selectedDestination.longitude }),
         signal: quoteController.signal
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Ongkir belum dapat dihitung.');
+      if (!response.ok) throw new Error(result.error || 'Jarak rute belum dapat dihitung.');
       if (requestId !== quoteRequestId) return;
-      const options = (result.data || []).filter((option) => Number.isFinite(Number(option.cost)) && Number(option.cost) >= 0)
-        .map((option) => {
-          const serviceInfo = [option.name, option.code, option.service, option.description, option.category, option.service_type].join(' ').toLocaleLowerCase('id-ID');
-          return { ...option, shippingCategory: /(cargo|kargo|trucking|jtr|big.?pack|freight)/.test(serviceInfo) ? 'cargo' : 'regular' };
-        })
-        .sort((a, b) => Number(a.cost) - Number(b.cost));
-      if (!options.length) throw new Error('Belum ada layanan ekspedisi untuk alamat ini.');
-      const courierMap = new Map();
-      options.forEach((option) => {
-        const key = String(option.code || option.name || 'kurir').trim().toLocaleLowerCase('id-ID');
-        if (!courierMap.has(key)) courierMap.set(key, { key, name: option.name || option.code || 'Kurir', options: [] });
-        courierMap.get(key).options.push(option);
-      });
-      const couriers = [...courierMap.values()]
-        .map((courier) => ({ ...courier, options: courier.options.sort((a, b) => Number(a.cost) - Number(b.cost)) }))
-        .sort((a, b) => Number(a.options[0].cost) - Number(b.options[0].cost));
-      selectedRate = couriers[0].options[0];
-      const cheapestCourier = couriers[0];
-      const regularAlternatives = couriers.filter((courier) => courier !== cheapestCourier && courier.options.some((option) => option.shippingCategory === 'regular')).slice(0, 2);
-      const cargoAlternative = couriers.find((courier) => courier !== cheapestCourier && courier.options.some((option) => option.shippingCategory === 'cargo'));
-      const recommendedCouriers = [...new Set([cheapestCourier, ...regularAlternatives, cargoAlternative].filter(Boolean))]
-        .sort((a, b) => Number(a.options[0].cost) - Number(b.options[0].cost));
-      const otherCouriers = couriers.filter((courier) => !recommendedCouriers.includes(courier));
-      let selectedCourier = cheapestCourier;
-      selectedRate = cheapestCourier.options[0];
-
-      const picker = document.createElement('details'); picker.className = 'shipping-courier-picker';
-      const pickerSummary = document.createElement('summary'); pickerSummary.className = 'shipping-picker-summary';
-      const pickerCopy = document.createElement('span'); pickerCopy.className = 'shipping-picker-copy';
-      const pickerName = document.createElement('strong');
-      const pickerPrice = document.createElement('small');
-      pickerCopy.append(pickerName, pickerPrice);
-      const pickerBadge = document.createElement('small'); pickerBadge.className = 'shipping-cheapest-badge'; pickerBadge.textContent = 'Termurah';
-      pickerSummary.append(pickerCopy, pickerBadge);
-      const pickerMenu = document.createElement('div'); pickerMenu.className = 'shipping-picker-menu';
-      picker.append(pickerSummary, pickerMenu);
-      const services = document.createElement('div'); services.className = 'shipping-services';
-      rates.append(picker, services);
-
-      const renderServices = (courier) => {
-        services.replaceChildren(...courier.options.map((option, serviceIndex) => {
-          const label = document.createElement('label'); label.className = 'shipping-rate-option';
-          const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = `${courier.key}-${serviceIndex}`; radio.required = true;
-          radio.checked = option === selectedRate;
-          label.classList.toggle('selected', radio.checked);
-          radio.addEventListener('change', () => {
-            selectedRate = option;
-            orderRequestId = null;
-            services.querySelectorAll('.shipping-rate-option').forEach((rateLabel) => rateLabel.classList.remove('selected'));
-            label.classList.add('selected');
-            pickerPrice.textContent = `${option.service || option.description || option.name || option.code} - ${formatRupiah(Number(option.cost))}`;
-            services.hidden = true;
-            setStatus(`Pilihan ${pickerName.textContent} - ${formatRupiah(Number(option.cost))} tersimpan. Klik dropdown untuk mengganti kurir atau layanan.`);
-          });
-          const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-          const title = document.createElement('strong'); title.textContent = `${option.service || option.description || option.name || option.code}${option.shippingCategory === 'cargo' ? ' - Kargo' : ''}`;
-          const detail = document.createElement('small'); detail.textContent = [serviceIndex === 0 ? 'Layanan termurah kurir ini' : '', option.description, option.etd ? `Estimasi ${option.etd}` : ''].filter(Boolean).join(' / ');
-          const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(Number(option.cost));
-          copy.append(title, detail); label.append(radio, copy, price); return label;
-        }));
-      };
-      const chooseCourier = (courier, revealServices = true) => {
-        orderRequestId = null;
-        selectedRate = courier.options[0];
-        const isCheapest = courier === cheapestCourier;
-        pickerName.textContent = courier.name;
-        pickerPrice.textContent = `Mulai ${formatRupiah(Number(courier.options[0].cost))}`;
-        pickerBadge.textContent = isCheapest ? 'Termurah' : courier.options.some((option) => option.shippingCategory === 'cargo') ? 'Kargo tersedia' : 'Rekomendasi';
-        pickerBadge.hidden = !isCheapest && !courier.options.some((option) => option.shippingCategory === 'cargo');
-        picker.open = false;
-        renderServices(courier);
-        services.hidden = !revealServices;
-        setStatus(`Kurir ${courier.name} dipilih. Pilih layanan dan harga pengiriman di bawah.`);
-      };
-      const renderCourierChoice = (courier) => {
-        const choice = document.createElement('button'); choice.type = 'button'; choice.className = 'shipping-courier-choice';
-        const name = document.createElement('strong'); name.textContent = courier.name;
-        const cost = document.createElement('span'); cost.textContent = formatRupiah(Number(courier.options[0].cost));
-        const detail = document.createElement('small');
-        detail.textContent = courier === cheapestCourier ? 'Termurah' : courier.options.some((option) => option.shippingCategory === 'cargo') ? 'Kargo tersedia' : 'Rekomendasi';
-        choice.append(name, cost, detail);
-        choice.addEventListener('click', () => chooseCourier(courier));
-        return choice;
-      };
-      pickerMenu.append(...recommendedCouriers.map(renderCourierChoice));
-      if (otherCouriers.length) {
-        const more = document.createElement('details'); more.className = 'shipping-picker-more';
-        const moreSummary = document.createElement('summary'); moreSummary.textContent = `Kurir lainnya (${otherCouriers.length})`;
-        more.append(moreSummary, ...otherCouriers.map(renderCourierChoice));
-        pickerMenu.append(more);
-      }
-      chooseCourier(cheapestCourier, false);
-      picker.open = false;
-      const weightNote = document.createElement('p'); weightNote.className = 'shipping-result-note';
-      weightNote.textContent = `Tarif untuk ${new Intl.NumberFormat('id-ID').format(result.weightGrams)} g.`;
-      rates.append(weightNote);
-      setStatus('Tarif termurah dipilih otomatis. Anda bisa memilih jasa kirim atau layanan kargo lain yang tersedia.');
+      selectedRate = { code: 'local', name: 'Pengantaran toko', service: 'Tarif berdasarkan jarak jalan', cost: Number(result.shippingCost) };
+      const line = document.createElement('div'); line.className = 'shipping-rate-option selected';
+      const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
+      const title = document.createElement('strong'); title.textContent = `Jarak rute ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(result.distanceKm)} km`;
+      const detail = document.createElement('small'); detail.textContent = '4 km pertama Rp10.000, selanjutnya Rp2.500 per km (dibulatkan ke atas)';
+      const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(selectedRate.cost);
+      copy.append(title, detail); line.append(copy, price); rates.replaceChildren(line);
+      selectedDestination.distanceKm = Number(result.distanceKm);
+      setStatus(`Ongkir pengantaran dihitung dari jarak rute ${result.distanceKm} km.`);
     } catch (error) {
       if (error.name === 'AbortError' || requestId !== quoteRequestId) return;
-      const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Layanan RajaOngkir sedang tidak tersedia.';
+      const message = document.createElement('p'); message.className = 'shipping-error'; message.textContent = error.message || 'Jarak rute belum dapat dihitung.';
       rates.replaceChildren(message);
       setStatus(error.message || 'Ongkir belum dapat dihitung.', true);
     }
@@ -336,7 +232,8 @@ function scheduleShippingQuote() {
       ['Alamat', data.get('address')],
       ['Lokasi tujuan', selectedDestination.label],
       ['Pengiriman', `${selectedRate.name || selectedRate.code} ${selectedRate.service || ''}`.trim()],
-      ['Ongkir', formatRupiah(Number(selectedRate.cost))],
+      ['Jarak rute', `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(selectedDestination.distanceKm))} km`],
+      ['Ongkir', formatRupiah(Number(savedOrder.shippingCost))],
       ['Kode pembayaran', savedOrder.paymentCode],
       ['Total transfer', formatRupiah(Number(savedOrder.total))],
       ['Status', 'Menunggu pembayaran']
@@ -366,20 +263,15 @@ function scheduleShippingQuote() {
 
   renderProducts();
   renderCart();
-  const destinationInput = document.querySelector('#destination-search');
   destinationInput.addEventListener('input', () => {
-    if (searchController) searchController.abort();
     clearTimeout(quoteTimer);
     if (quoteController) quoteController.abort();
     quoteRequestId += 1;
-    selectedDestination = null;
+    orderRequestId = null;
+    if (selectedDestination) selectedDestination.label = destinationInput.value.trim();
     selectedRate = null;
-    document.querySelector('#destination-id').value = '';
-    document.querySelector('#destination-results').replaceChildren();
     document.querySelector('#shipping-rates').replaceChildren();
-    const search = destinationInput.value.trim();
-    clearTimeout(searchTimer);
-    if (search.length >= 3) searchTimer = setTimeout(() => searchDestinations(search), 350);
+    if (selectedDestination) scheduleShippingQuote();
   });
   form.addEventListener('input', () => { if (!isSubmittingOrder) orderRequestId = null; });
   form.addEventListener('submit', async (event) => {
@@ -391,13 +283,13 @@ function scheduleShippingQuote() {
       document.querySelector('#product-list').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    if (!selectedDestination) {
-      setStatus('Pilih kelurahan, kecamatan, atau kota dari hasil pencarian terlebih dahulu.', true);
+    if (!selectedDestination || !selectedDestination.label) {
+      setStatus('Isi kota atau kecamatan, lalu pilih titik tujuan pada peta.', true);
       destinationInput.focus();
       return;
     }
     if (!selectedRate) {
-      setStatus('Tunggu estimasi ongkir selesai, lalu pilih salah satu layanan pengiriman.', true);
+      setStatus('Tunggu perhitungan jarak dan ongkir selesai.', true);
       document.querySelector('#shipping-rates').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -484,6 +376,7 @@ function scheduleShippingQuote() {
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
 })();
+
 
 
 
