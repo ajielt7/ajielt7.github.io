@@ -41,7 +41,7 @@
   let destinationSearchRequestId = 0;
   let orderRequestId = null;
   let isSubmittingOrder = false;
-  let currentOrder = null;
+  let completedPaymentCode = '';
   let checkoutPanelVisible = false;
 
   const destinationInput = document.querySelector('#destination-search');
@@ -463,7 +463,7 @@ function scheduleShippingQuote() {
   }
 
   function showSummary(data, savedOrder) {
-    currentOrder = savedOrder;
+    completedPaymentCode = String(savedOrder.paymentCode || '');
     const cartDescription = [...cart.entries()].map(([id, quantity]) =>
       `${products[id].name} x ${quantity} x ${formatRupiah(products[id].price * quantity)}`
     ).join('; ');
@@ -492,12 +492,7 @@ function scheduleShippingQuote() {
       row.append(key, val); return row;
     }));
     const warning = document.querySelector('.summary-warning');
-    warning.textContent = `Pesanan sudah disimpan. Cantumkan kode ${savedOrder.paymentCode} pada deskripsi transfer. Unggah screenshot bukti pembayaran di bawah ini.`;
-    document.querySelector('#proof-upload').hidden = false;
-    document.querySelector('#payment-proof-file').value = '';
-    document.querySelector('#payment-proof-file').disabled = false;
-    document.querySelector('#upload-proof-button').disabled = true;
-    document.querySelector('#proof-upload-status').textContent = '';
+    warning.textContent = `Pesanan berhasil dibuat. Simpan kode pembayaran ${savedOrder.paymentCode} untuk transfer.`;
     dialogBackdrop.hidden = false;
     summaryDialog.showModal();
   }
@@ -505,6 +500,31 @@ function scheduleShippingQuote() {
   function closeSummary() {
     if (summaryDialog.open) summaryDialog.close();
     dialogBackdrop.hidden = true;
+  }
+
+  function resetOrderForm() {
+    closeSummary();
+    if (mobileCheckoutDialog.open) mobileCheckoutDialog.close();
+    form.reset();
+    cart.clear();
+    selectedArea = null;
+    selectedDestination = null;
+    selectedRate = null;
+    orderRequestId = null;
+    completedPaymentCode = '';
+    if (destinationMarker) {
+      destinationMarker.remove();
+      destinationMarker = null;
+    }
+    destinationResults.hidden = true;
+    destinationResults.replaceChildren();
+    destinationSelectionStatus.textContent = '';
+    destinationCoordinates.textContent = '';
+    routeMap.flyTo({ center: [107.7430814007, -6.9298300251], zoom: 12 });
+    document.querySelector('#shipping-rates').replaceChildren();
+    renderCart();
+    setStatus('Pesanan belum dikirim.');
+    document.querySelector('.submit-button').disabled = false;
   }
 
   renderProducts();
@@ -611,46 +631,13 @@ function scheduleShippingQuote() {
       submitButton.innerHTML = `${originalButtonText} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
     }
   });
-  document.querySelector('#close-dialog').addEventListener('click', closeSummary);
-  document.querySelector('#back-to-form').addEventListener('click', closeSummary);
-  const proofFileInput = document.querySelector('#payment-proof-file');
-  const proofUploadButton = document.querySelector('#upload-proof-button');
-  const proofUploadStatus = document.querySelector('#proof-upload-status');
-  proofFileInput.addEventListener('change', () => {
-    proofUploadButton.disabled = !proofFileInput.files?.length;
-    proofUploadStatus.textContent = proofFileInput.files?.length ? `Dipilih: ${proofFileInput.files[0].name}` : '';
-  });
-  proofUploadButton.addEventListener('click', async () => {
-    const file = proofFileInput.files?.[0];
-    if (!file || !currentOrder) return;
-    const form = document.querySelector('#order-form');
-    const upload = new FormData();
-    upload.append('orderId', currentOrder.orderId);
-    upload.append('paymentCode', currentOrder.paymentCode);
-    upload.append('phone', form.elements.phone.value.trim());
-    upload.append('proof', file, file.name);
-    proofUploadButton.disabled = true;
-    proofFileInput.disabled = true;
-    proofUploadButton.textContent = 'Mengunggah...';
-    proofUploadStatus.textContent = 'Mengunggah bukti pembayaran secara privat...';
-    proofUploadStatus.classList.remove('error');
-    try {
-      const response = await fetch(`${API_BASE}/api/orders/proof`, { method: 'POST', body: upload });
-      const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error(result.error || 'Bukti belum berhasil diunggah.');
-      proofUploadStatus.textContent = 'Bukti pembayaran tersimpan. Admin akan mencocokkannya dengan mutasi.';
-      proofUploadButton.textContent = 'Bukti berhasil diunggah';
-    } catch (error) {
-      proofUploadStatus.textContent = error.message || 'Bukti belum berhasil diunggah. Coba lagi.';
-      proofUploadStatus.classList.add('error');
-      proofFileInput.disabled = false;
-      proofUploadButton.disabled = false;
-      proofUploadButton.textContent = 'Coba unggah lagi';
-    }
+  document.querySelector('#new-order-button').addEventListener('click', () => {
+    window.alert(`Pesanan berhasil dibuat! Kode pembayaran: ${completedPaymentCode}`);
+    resetOrderForm();
   });
   dialogBackdrop.addEventListener('click', closeSummary);
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSummary(); });
+  summaryDialog.addEventListener('cancel', (event) => event.preventDefault());
 })();
 
 
