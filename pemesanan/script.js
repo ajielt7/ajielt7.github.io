@@ -41,7 +41,7 @@
   let destinationSearchRequestId = 0;
   let orderRequestId = null;
   let isSubmittingOrder = false;
-  let completedPaymentCode = '';
+  let currentOrder = null;
   let checkoutPanelVisible = false;
 
   const destinationInput = document.querySelector('#destination-search');
@@ -463,7 +463,7 @@ function scheduleShippingQuote() {
   }
 
   function showSummary(data, savedOrder) {
-    completedPaymentCode = String(savedOrder.paymentCode || '');
+    currentOrder = savedOrder;
     const cartDescription = [...cart.entries()].map(([id, quantity]) =>
       `${products[id].name} x ${quantity} x ${formatRupiah(products[id].price * quantity)}`
     ).join('; ');
@@ -492,7 +492,16 @@ function scheduleShippingQuote() {
       row.append(key, val); return row;
     }));
     const warning = document.querySelector('.summary-warning');
-    warning.textContent = `Pesanan berhasil dibuat. Simpan kode pembayaran ${savedOrder.paymentCode} untuk transfer.`;
+    warning.textContent = `Cantumkan kode ${savedOrder.paymentCode} pada deskripsi transfer, lalu unggah screenshot bukti pembayaran di bawah ini.`;
+    const proofFileInput = document.querySelector('#payment-proof-file');
+    proofFileInput.value = '';
+    proofFileInput.disabled = false;
+    const proofUploadButton = document.querySelector('#upload-proof-button');
+    proofUploadButton.disabled = true;
+    proofUploadButton.textContent = 'Unggah bukti';
+    const proofUploadStatus = document.querySelector('#proof-upload-status');
+    proofUploadStatus.textContent = '';
+    proofUploadStatus.classList.remove('error');
     dialogBackdrop.hidden = false;
     summaryDialog.showModal();
   }
@@ -511,7 +520,12 @@ function scheduleShippingQuote() {
     selectedDestination = null;
     selectedRate = null;
     orderRequestId = null;
-    completedPaymentCode = '';
+    currentOrder = null;
+    document.querySelector('#payment-proof-file').value = '';
+    document.querySelector('#proof-upload-status').textContent = '';
+    const uploadProofButton = document.querySelector('#upload-proof-button');
+    uploadProofButton.disabled = true;
+    uploadProofButton.textContent = 'Unggah bukti';
     if (destinationMarker) {
       destinationMarker.remove();
       destinationMarker = null;
@@ -621,6 +635,7 @@ function scheduleShippingQuote() {
       });
       const result = await response.json();
       if (!response.ok || !result.ok || !result.order) throw new Error(result.error || 'Pesanan belum berhasil disimpan.');
+      window.alert(`Pesanan berhasil dibuat! Kode pembayaran: ${result.order.paymentCode}`);
       showSummary(new FormData(form), result.order);
       setStatus(`Pesanan tersimpan. Kode pembayaran: ${result.order.paymentCode}`);
     } catch (error) {
@@ -631,11 +646,42 @@ function scheduleShippingQuote() {
       submitButton.innerHTML = `${originalButtonText} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
     }
   });
-  document.querySelector('#new-order-button').addEventListener('click', () => {
-    window.alert(`Pesanan berhasil dibuat! Kode pembayaran: ${completedPaymentCode}`);
-    resetOrderForm();
+  document.querySelector('#new-order-button').addEventListener('click', resetOrderForm);
+  const proofFileInput = document.querySelector('#payment-proof-file');
+  const proofUploadButton = document.querySelector('#upload-proof-button');
+  const proofUploadStatus = document.querySelector('#proof-upload-status');
+  proofFileInput.addEventListener('change', () => {
+    proofUploadButton.disabled = !proofFileInput.files?.length;
+    proofUploadStatus.textContent = proofFileInput.files?.length ? `Dipilih: ${proofFileInput.files[0].name}` : '';
+    proofUploadStatus.classList.remove('error');
   });
-  dialogBackdrop.addEventListener('click', closeSummary);
+  proofUploadButton.addEventListener('click', async () => {
+    const file = proofFileInput.files?.[0];
+    if (!file || !currentOrder) return;
+    const upload = new FormData();
+    upload.append('orderId', currentOrder.orderId);
+    upload.append('paymentCode', currentOrder.paymentCode);
+    upload.append('phone', form.elements.phone.value.trim());
+    upload.append('proof', file, file.name);
+    proofUploadButton.disabled = true;
+    proofFileInput.disabled = true;
+    proofUploadButton.textContent = 'Mengunggah...';
+    proofUploadStatus.textContent = 'Mengunggah bukti pembayaran secara privat...';
+    proofUploadStatus.classList.remove('error');
+    try {
+      const response = await fetch(`${API_BASE}/api/orders/proof`, { method: 'POST', body: upload });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || 'Bukti belum berhasil diunggah.');
+      proofUploadStatus.textContent = 'Bukti pembayaran berhasil diunggah.';
+      proofUploadButton.textContent = 'Bukti berhasil diunggah';
+    } catch (error) {
+      proofUploadStatus.textContent = error.message || 'Bukti belum berhasil diunggah. Coba lagi.';
+      proofUploadStatus.classList.add('error');
+      proofFileInput.disabled = false;
+      proofUploadButton.disabled = false;
+      proofUploadButton.textContent = 'Coba unggah lagi';
+    }
+  });
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
   summaryDialog.addEventListener('cancel', (event) => event.preventDefault());
 })();
