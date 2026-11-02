@@ -42,11 +42,14 @@
 
   const destinationInput = document.querySelector('#destination-search');
   const destinationCoordinates = document.querySelector('#destination-coordinates');
-  const routeMap = L.map('destination-map').setView([-6.9298300251, 107.7430814007], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(routeMap);
+  const routeMap = new maplibregl.Map({
+    container: 'destination-map',
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [107.7430814007, -6.9298300251],
+    zoom: 12,
+    attributionControl: true
+  });
+  routeMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   let destinationMarker = null;
 
   function chooseDestinationPoint(latitude, longitude) {
@@ -56,17 +59,22 @@
     };
     orderRequestId = null;
     if (!destinationMarker) {
-      destinationMarker = L.marker([latitude, longitude], { draggable: true }).addTo(routeMap);
+      const markerElement = document.createElement('div');
+      markerElement.className = 'custom-marker';
+      markerElement.innerHTML = '<i class="fa-solid fa-location-dot" aria-hidden="true"></i>';
+      destinationMarker = new maplibregl.Marker({ element: markerElement, draggable: true })
+        .setLngLat([longitude, latitude])
+        .addTo(routeMap);
       destinationMarker.on('dragend', () => {
-        const point = destinationMarker.getLatLng();
+        const point = destinationMarker.getLngLat();
         chooseDestinationPoint(point.lat, point.lng);
       });
-    } else destinationMarker.setLatLng([latitude, longitude]);
+    } else destinationMarker.setLngLat([longitude, latitude]);
     destinationCoordinates.textContent = `Pin: ${Number(latitude).toFixed(6)}, ${Number(longitude).toFixed(6)}`;
     scheduleShippingQuote();
   }
 
-  routeMap.on('click', (event) => chooseDestinationPoint(event.latlng.lat, event.latlng.lng));
+  routeMap.on('click', (event) => chooseDestinationPoint(event.lngLat.lat, event.lngLat.lng));
 
   if ('IntersectionObserver' in window && checkoutPanel) {
     new IntersectionObserver(([entry]) => {
@@ -77,7 +85,7 @@
 
   mobileCartShortcut.addEventListener('click', () => {
     mobileCheckoutDialog.showModal();
-    setTimeout(() => routeMap.invalidateSize(), 100);
+    setTimeout(() => routeMap.resize(), 100);
   });
   document.querySelector('#close-mobile-checkout').addEventListener('click', () => mobileCheckoutDialog.close());
   mobileCheckoutDialog.addEventListener('click', (event) => {
