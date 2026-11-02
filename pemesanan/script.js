@@ -256,27 +256,77 @@ function scheduleShippingQuote() {
       messages.push('Pilih kecamatan dari saran untuk melihat tarif ekspedisi RajaOngkir.');
     }
 
-    options.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name));
     if (options.length) {
+      options.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name));
       selectedRate = options[0];
-      rates.replaceChildren(...options.map((rate, index) => {
-        const line = document.createElement('label');
-        line.className = `shipping-rate-option${index === 0 ? ' selected' : ''}`;
-        const radio = document.createElement('input');
-        radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = String(index); radio.checked = index === 0;
-        const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
-        const title = document.createElement('strong'); title.textContent = `${rate.name} · ${rate.service}`;
-        const detail = document.createElement('small'); detail.textContent = rate.description || 'Tarif ekspedisi';
-        const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(rate.cost);
-        copy.append(title, detail); line.append(radio, copy, price);
-        radio.addEventListener('change', () => {
-          selectedRate = rate;
-          rates.querySelectorAll('.shipping-rate-option').forEach((option) => option.classList.remove('selected'));
-          line.classList.add('selected');
-          setStatus(`${rate.name} ${rate.service} dipilih · ${formatRupiah(rate.cost)}.`);
+      const groupedRates = new Map();
+      options.forEach((rate) => {
+        const key = rate.code;
+        if (!groupedRates.has(key)) groupedRates.set(key, { code: key, name: rate.name, rates: [] });
+        groupedRates.get(key).rates.push(rate);
+      });
+      const groups = [...groupedRates.values()];
+      groups.forEach((group) => group.rates.sort((a, b) => a.cost - b.cost || a.service.localeCompare(b.service)));
+      groups.sort((a, b) => {
+        if (a.code === 'gojek') return -1;
+        if (b.code === 'gojek') return 1;
+        return a.rates[0].cost - b.rates[0].cost || a.name.localeCompare(b.name);
+      });
+
+      const groupElements = groups.map((group) => {
+        const container = document.createElement('details');
+        container.className = 'shipping-courier-group';
+        container.open = group.rates.includes(selectedRate);
+        const summary = document.createElement('summary');
+        summary.className = 'shipping-courier-summary';
+        const name = document.createElement('strong'); name.textContent = group.name;
+        const lowest = document.createElement('small'); lowest.className = 'shipping-courier-lowest';
+        const cheapestBadge = document.createElement('span');
+        cheapestBadge.className = 'shipping-cheapest-badge';
+        cheapestBadge.textContent = 'Termurah';
+        cheapestBadge.hidden = !group.rates.includes(options[0]);
+        summary.append(name, lowest, cheapestBadge);
+
+        const updateSummary = () => {
+          const chosen = group.rates.find((rate) => rate === selectedRate);
+          lowest.textContent = chosen
+            ? `Dipilih · ${chosen.service} · ${formatRupiah(chosen.cost)}`
+            : `Mulai ${formatRupiah(group.rates[0].cost)}`;
+        };
+        updateSummary();
+
+        const rateRows = group.rates.map((rate) => {
+          const line = document.createElement('label');
+          line.className = `shipping-rate-option${rate === selectedRate ? ' selected' : ''}`;
+          const radio = document.createElement('input');
+          radio.type = 'radio'; radio.name = 'shippingRate'; radio.value = `${group.code}:${rate.service}`;
+          radio.checked = rate === selectedRate;
+          const copy = document.createElement('span'); copy.className = 'shipping-rate-copy';
+          const title = document.createElement('strong'); title.textContent = rate.service;
+          const detail = document.createElement('small'); detail.textContent = rate.description || 'Tarif pengiriman';
+          const price = document.createElement('strong'); price.className = 'shipping-rate-price'; price.textContent = formatRupiah(rate.cost);
+          copy.append(title, detail); line.append(radio, copy, price);
+          radio.addEventListener('change', () => {
+            selectedRate = rate;
+            rates.querySelectorAll('.shipping-rate-option').forEach((option) => option.classList.remove('selected'));
+            line.classList.add('selected');
+            groupElements.forEach((element) => { element.open = element === container; });
+            groups.forEach((entry, index) => {
+              const selectedGroup = groupElements[index];
+              const summaryDetail = selectedGroup.querySelector('.shipping-courier-lowest');
+              const chosen = entry.rates.find((candidate) => candidate === selectedRate);
+              summaryDetail.textContent = chosen
+                ? `Dipilih · ${chosen.service} · ${formatRupiah(chosen.cost)}`
+                : `Mulai ${formatRupiah(entry.rates[0].cost)}`;
+            });
+            setStatus(`${rate.name} ${rate.service} dipilih · ${formatRupiah(rate.cost)}.`);
+          });
+          return line;
         });
-        return line;
-      }));
+        container.append(summary, ...rateRows);
+        return container;
+      });
+      rates.replaceChildren(...groupElements);
     } else {
       selectedRate = null;
       rates.replaceChildren();
