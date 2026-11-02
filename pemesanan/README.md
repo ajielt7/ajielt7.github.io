@@ -34,5 +34,5 @@ Frontend berada di folder `pemesanan/` pada repository Pages `ajielt7/ajielt7.gi
 
 ## Status
 
-Checkout, integrasi Worker RajaOngkir, endpoint pesanan, dan upload bukti Drive sudah disiapkan di source. Apps Script perlu diperbarui dan diterbitkan sebagai versi baru agar menyimpan gambar ke folder `Bukti Pembayaran`; izin Drive mungkin perlu disetujui saat upload pertama. Dashboard ACC manual dan akses admin melihat bukti masih tahap berikutnya. Bobot katalog masih contoh. Lihat [state.md](docs/state.md) untuk status dan keputusan teknis terbuka.
+Checkout, integrasi Worker RajaOngkir, endpoint pesanan, dan upload bukti Drive sudah berjalan. Dasbor ACC admin responsif untuk Android ada di [admin/](admin/); sebelum dipakai, terapkan action Apps Script terbaru, konfigurasi secret Worker `ADMIN_TOKEN`, deploy Worker, dan publikasikan perubahan ke GitHub Pages. Lihat [panduan admin Android](admin/README.md) serta [state.md](docs/state.md). Bobot katalog masih contoh.
 
