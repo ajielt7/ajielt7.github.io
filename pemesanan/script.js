@@ -498,7 +498,7 @@ function scheduleShippingQuote() {
     proofFileInput.disabled = false;
     const proofUploadButton = document.querySelector('#upload-proof-button');
     proofUploadButton.disabled = true;
-    proofUploadButton.textContent = 'Unggah bukti';
+    proofUploadButton.textContent = 'Pesan Sekarang';
     const proofUploadStatus = document.querySelector('#proof-upload-status');
     proofUploadStatus.textContent = '';
     proofUploadStatus.classList.remove('error');
@@ -525,7 +525,7 @@ function scheduleShippingQuote() {
     document.querySelector('#proof-upload-status').textContent = '';
     const uploadProofButton = document.querySelector('#upload-proof-button');
     uploadProofButton.disabled = true;
-    uploadProofButton.textContent = 'Unggah bukti';
+    uploadProofButton.textContent = 'Pesan Sekarang';
     if (destinationMarker) {
       destinationMarker.remove();
       destinationMarker = null;
@@ -678,7 +678,7 @@ function scheduleShippingQuote() {
       proofUploadStatus.classList.add('error');
       proofFileInput.disabled = false;
       proofUploadButton.disabled = false;
-      proofUploadButton.textContent = 'Coba unggah lagi';
+      proofUploadButton.textContent = 'Pesan Sekarang';
     }
   });
   summaryDialog.addEventListener('close', () => { dialogBackdrop.hidden = true; });
