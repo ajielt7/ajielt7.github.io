@@ -635,7 +635,6 @@ function scheduleShippingQuote() {
       });
       const result = await response.json();
       if (!response.ok || !result.ok || !result.order) throw new Error(result.error || 'Pesanan belum berhasil disimpan.');
-      window.alert(`Pesanan berhasil dibuat! Kode pembayaran: ${result.order.paymentCode}`);
       showSummary(new FormData(form), result.order);
       setStatus(`Pesanan tersimpan. Kode pembayaran: ${result.order.paymentCode}`);
     } catch (error) {
@@ -646,7 +645,6 @@ function scheduleShippingQuote() {
       submitButton.innerHTML = `${originalButtonText} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
     }
   });
-  document.querySelector('#new-order-button').addEventListener('click', resetOrderForm);
   const proofFileInput = document.querySelector('#payment-proof-file');
   const proofUploadButton = document.querySelector('#upload-proof-button');
   const proofUploadStatus = document.querySelector('#proof-upload-status');
@@ -672,8 +670,9 @@ function scheduleShippingQuote() {
       const response = await fetch(`${API_BASE}/api/orders/proof`, { method: 'POST', body: upload });
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error(result.error || 'Bukti belum berhasil diunggah.');
-      proofUploadStatus.textContent = 'Bukti pembayaran berhasil diunggah.';
-      proofUploadButton.textContent = 'Bukti berhasil diunggah';
+      proofUploadStatus.textContent = 'Bukti berhasil diunggah. Mengosongkan formulir...';
+      window.alert(`Pesanan ${currentOrder.paymentCode} berhasil dibuat dan bukti pembayaran berhasil diunggah.`);
+      resetOrderForm();
     } catch (error) {
       proofUploadStatus.textContent = error.message || 'Bukti belum berhasil diunggah. Coba lagi.';
       proofUploadStatus.classList.add('error');
