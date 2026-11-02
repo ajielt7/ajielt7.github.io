@@ -273,27 +273,38 @@ function scheduleShippingQuote() {
         return a.rates[0].cost - b.rates[0].cost || a.name.localeCompare(b.name);
       });
 
-      const groupElements = groups.map((group) => {
-        const container = document.createElement('details');
-        container.className = 'shipping-courier-group';
-        container.open = group.rates.includes(selectedRate);
-        const summary = document.createElement('summary');
-        summary.className = 'shipping-courier-summary';
-        const name = document.createElement('strong'); name.textContent = group.name;
-        const lowest = document.createElement('small'); lowest.className = 'shipping-courier-lowest';
-        const cheapestBadge = document.createElement('span');
-        cheapestBadge.className = 'shipping-cheapest-badge';
-        cheapestBadge.textContent = 'Termurah';
-        cheapestBadge.hidden = !group.rates.includes(options[0]);
-        summary.append(name, lowest, cheapestBadge);
+      const picker = document.createElement('details');
+      picker.className = 'shipping-courier-picker';
+      const pickerSummary = document.createElement('summary');
+      pickerSummary.className = 'shipping-picker-summary';
+      const pickerCopy = document.createElement('span'); pickerCopy.className = 'shipping-picker-copy';
+      const selectedLabel = document.createElement('strong');
+      const selectedPrice = document.createElement('small');
+      pickerCopy.append(selectedLabel, selectedPrice);
+      pickerSummary.append(pickerCopy);
+      const pickerMenu = document.createElement('div');
+      pickerMenu.className = 'shipping-picker-menu';
+      const groupElementsByCode = new Map();
+      const updatePickerSummary = () => {
+        selectedLabel.textContent = `${selectedRate.name} · ${selectedRate.service}`;
+        selectedPrice.textContent = formatRupiah(selectedRate.cost);
+      };
+      updatePickerSummary();
 
-        const updateSummary = () => {
+      const makeCourierGroup = (group) => {
+        const container = document.createElement('details');
+        container.className = 'shipping-package-group';
+        const summary = document.createElement('summary');
+        summary.className = 'shipping-courier-choice';
+        const name = document.createElement('strong'); name.textContent = group.name;
+        const lowest = document.createElement('span'); lowest.textContent = `Mulai ${formatRupiah(group.rates[0].cost)}`;
+        const packageHint = document.createElement('small');
+        const updateGroupSummary = () => {
           const chosen = group.rates.find((rate) => rate === selectedRate);
-          lowest.textContent = chosen
-            ? `Dipilih · ${chosen.service} · ${formatRupiah(chosen.cost)}`
-            : `Mulai ${formatRupiah(group.rates[0].cost)}`;
+          packageHint.textContent = chosen ? `Dipilih · ${chosen.service}` : `${group.rates.length} paket tersedia`;
         };
-        updateSummary();
+        updateGroupSummary();
+        summary.append(name, lowest, packageHint);
 
         const rateRows = group.rates.map((rate) => {
           const line = document.createElement('label');
@@ -310,23 +321,44 @@ function scheduleShippingQuote() {
             selectedRate = rate;
             rates.querySelectorAll('.shipping-rate-option').forEach((option) => option.classList.remove('selected'));
             line.classList.add('selected');
-            groupElements.forEach((element) => { element.open = element === container; });
-            groups.forEach((entry, index) => {
-              const selectedGroup = groupElements[index];
-              const summaryDetail = selectedGroup.querySelector('.shipping-courier-lowest');
-              const chosen = entry.rates.find((candidate) => candidate === selectedRate);
-              summaryDetail.textContent = chosen
-                ? `Dipilih · ${chosen.service} · ${formatRupiah(chosen.cost)}`
-                : `Mulai ${formatRupiah(entry.rates[0].cost)}`;
+            groups.forEach((entry) => {
+              const groupElement = groupElementsByCode.get(entry.code);
+              if (groupElement) {
+                groupElement.open = false;
+                const hint = groupElement.querySelector('.shipping-courier-choice small');
+                const chosen = entry.rates.find((candidate) => candidate === selectedRate);
+                hint.textContent = chosen ? `Dipilih · ${chosen.service}` : `${entry.rates.length} paket tersedia`;
+              }
             });
+            updatePickerSummary();
+            picker.open = false;
             setStatus(`${rate.name} ${rate.service} dipilih · ${formatRupiah(rate.cost)}.`);
           });
           return line;
         });
-        container.append(summary, ...rateRows);
+        container.dataset.courierCode = group.code;
+        groupElementsByCode.set(group.code, container);
+        const services = document.createElement('div');
+        services.className = 'shipping-services';
+        services.append(...rateRows);
+        container.append(summary, services);
         return container;
-      });
-      rates.replaceChildren(...groupElements);
+      };
+
+      const gojekGroup = groups.find((group) => group.code === 'gojek');
+      const otherGroups = groups.filter((group) => group.code !== 'gojek');
+      const leadingGroups = gojekGroup ? [gojekGroup, ...otherGroups.slice(0, 3)] : otherGroups.slice(0, 4);
+      const remainingGroups = otherGroups.slice(gojekGroup ? 3 : 4);
+      leadingGroups.forEach((group) => pickerMenu.append(makeCourierGroup(group)));
+      if (remainingGroups.length) {
+        const moreCouriers = document.createElement('details');
+        moreCouriers.className = 'shipping-picker-more';
+        const moreSummary = document.createElement('summary'); moreSummary.textContent = 'Kurir selengkapnya';
+        moreCouriers.append(moreSummary, ...remainingGroups.map(makeCourierGroup));
+        pickerMenu.append(moreCouriers);
+      }
+      picker.append(pickerSummary, pickerMenu);
+      rates.replaceChildren(picker);
     } else {
       selectedRate = null;
       rates.replaceChildren();
