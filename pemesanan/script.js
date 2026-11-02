@@ -76,7 +76,7 @@
         chooseDestinationPoint(point.lat, point.lng);
       });
     } else destinationMarker.setLngLat([longitude, latitude]);
-    destinationCoordinates.textContent = `Pin: ${Number(latitude).toFixed(6)}, ${Number(longitude).toFixed(6)}`;
+    destinationCoordinates.textContent = `Pin: ${Number(latitude).toFixed(6)}, ${Number(longitude).toFixed(6)} · Menghitung jarak jalan...`;
     scheduleShippingQuote();
   }
 
@@ -159,18 +159,20 @@
     scheduleShippingQuote();
   }
 function scheduleShippingQuote() {
-    if (!selectedDestination || cart.size === 0) {
-      if (quoteController) quoteController.abort();
+    clearTimeout(quoteTimer);
+    if (quoteController) quoteController.abort();
+    quoteRequestId += 1;
+    if (!selectedDestination) {
       document.querySelector('#shipping-rates').replaceChildren();
       selectedRate = null;
       return;
     }
-    setStatus('Membandingkan ongkir Gojek dan ekspedisi...');
+    if (cart.size > 0) setStatus('Menghitung jarak dan membandingkan ongkir...');
     quoteTimer = setTimeout(calculateShipping, 700);
   }
 
   async function calculateShipping() {
-    if (!selectedDestination || cart.size === 0) return;
+    if (!selectedDestination) return;
     clearTimeout(quoteTimer);
     if (quoteController) quoteController.abort();
     quoteController = new AbortController();
@@ -188,7 +190,7 @@ function scheduleShippingQuote() {
         if (!response.ok) throw new Error(result.error || 'Jarak rute belum dapat dihitung.');
         return result;
       });
-    const courierRequest = selectedArea
+    const courierRequest = selectedArea && cart.size > 0
       ? fetch(`${API_BASE}/api/shipping-cost`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,6 +213,8 @@ function scheduleShippingQuote() {
       const route = routeResult.value;
       routeDistanceKm = Number(route.distanceKm);
       selectedDestination.distanceKm = routeDistanceKm;
+      const formattedDistance = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(routeDistanceKm);
+      destinationCoordinates.textContent = `Pin: ${Number(selectedDestination.latitude).toFixed(6)}, ${Number(selectedDestination.longitude).toFixed(6)} · Jarak jalan ${formattedDistance} km${routeDistanceKm < 30 ? ' · Gojek tersedia' : ' · Gojek tidak tersedia (jarak 30 km atau lebih)'}`;
       if (routeDistanceKm < 30) {
         options.push({
           code: 'gojek', name: 'Gojek', service: 'Same Day',
@@ -222,7 +226,14 @@ function scheduleShippingQuote() {
       }
     } else {
       selectedDestination.distanceKm = null;
+      destinationCoordinates.textContent = `Pin: ${Number(selectedDestination.latitude).toFixed(6)}, ${Number(selectedDestination.longitude).toFixed(6)} · Jarak jalan belum dapat dihitung.`;
       messages.push(routeResult.reason?.message || 'Jarak rute belum dapat dihitung.');
+    }
+
+    if (cart.size === 0) {
+      selectedRate = null;
+      rates.replaceChildren();
+      return;
     }
 
     if (courierResult.status === 'fulfilled') {
