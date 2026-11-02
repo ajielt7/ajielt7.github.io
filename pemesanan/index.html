@@ -87,8 +87,17 @@
     <span class="eyebrow"><span class="eyebrow-line"></span> RINGKASAN PESANAN</span>
     <h2 id="summary-title">Pesanan <em>dibuat.</em></h2>
     <div id="summary-content" class="summary-content"></div>
-    <p class="summary-warning"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Pesanan sudah tersimpan. Gunakan kode pembayaran saat melakukan transfer.</p>
-    <button type="button" class="dialog-button" id="new-order-button">Pesan Sekarang</button>
+    <p class="summary-warning"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Pesanan sudah tersimpan. Cantumkan kode pembayaran saat transfer, lalu unggah bukti pembayaran.</p>
+    <section class="proof-upload" id="proof-upload" aria-labelledby="proof-upload-title">
+      <h3 id="proof-upload-title">Unggah bukti transfer</h3>
+      <p>Pilih screenshot pembayaran. Format JPG, PNG, atau WebP; maksimal 5 MB.</p>
+      <label class="proof-file-field">Gambar bukti pembayaran
+        <input id="payment-proof-file" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="proof-upload-status">
+      </label>
+      <button type="button" class="dialog-button" id="upload-proof-button" disabled>Unggah bukti</button>
+      <p class="proof-upload-status" id="proof-upload-status" role="status" aria-live="polite"></p>
+    </section>
+    <button type="button" class="dialog-button" id="new-order-button">Kembali ke formulir</button>
   </dialog>
   <div class="dialog-backdrop" id="dialog-backdrop" hidden></div>
 
