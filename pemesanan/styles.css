@@ -29,6 +29,7 @@
 .order-heading,#order-form,.order-progress{max-width:1160px}
 .order-heading{margin-bottom:32px}
 .order-heading>p{max-width:390px;font-size:14px;line-height:1.75}
+.status-page-button{display:inline-flex;align-items:center;gap:9px;margin-top:13px;padding:11px 15px;border:1px solid var(--green);border-radius:3px;color:var(--green);font-size:11px;font-weight:700;line-height:1.2;text-decoration:none;transition:background .2s,color .2s}.status-page-button:hover{background:var(--green);color:var(--white)}
 .order-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 auto 34px;padding:0;list-style:none}
 .order-progress li{display:flex;align-items:center;gap:12px;min-width:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fffefa}
 .order-progress li>span{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:50%;background:#f1f2ec;color:#697365;font-weight:700;font-size:13px}
