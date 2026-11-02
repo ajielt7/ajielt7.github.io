@@ -46,7 +46,7 @@
             </div>
           <aside class="checkout-panel" aria-labelledby="checkout-title">
             <div class="checkout-panel-heading"><span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span><div><small id="cart-count-label">KERANJANG</small><h3 id="checkout-title">Keranjang & alamat</h3></div></div>
-            <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol â€œPilihâ€ pada produk.</p></div>
+            <div id="cart-items" class="cart-items"><p class="cart-empty">Belum ada produk dipilih.<br>Klik tombol “Pilih” pada produk.</p></div>
             <div class="cart-total"><span>Subtotal produk</span><strong id="cart-subtotal">Rp0</strong></div>
             <div class="checkout-divider"></div>
             <div class="form-section-heading checkout-subheading"><span class="step-number">02</span><div><h3>Kontak & alamat</h3></div></div>
@@ -54,11 +54,12 @@
               <label class="field"><span class="sr-only">Nama lengkap (wajib)</span><input name="customerName" required autocomplete="name" aria-label="Nama lengkap" placeholder="Nama lengkap"></label>
               <label class="field"><span class="sr-only">Nomor WhatsApp (wajib)</span><input name="phone" type="tel" required autocomplete="tel" aria-label="Nomor WhatsApp" placeholder="Nomor WhatsApp"></label>
               <label class="field"><span class="sr-only">Alamat lengkap (wajib)</span><textarea name="address" rows="3" required autocomplete="street-address" aria-label="Alamat lengkap" placeholder="Alamat lengkap"></textarea></label>
-              <label class="field"><span class="sr-only">Kota atau kecamatan tujuan (wajib)</span><input id="destination-search" type="text" autocomplete="address-level2" placeholder="Kota atau kecamatan tujuan" aria-label="Kota atau kecamatan tujuan" required></label>
+              <label class="field destination-search-field"><span class="sr-only">Kecamatan atau kota tujuan (wajib)</span><input id="destination-search" type="text" autocomplete="address-level2" placeholder="Cari kecamatan atau kota tujuan" aria-label="Kecamatan atau kota tujuan" required><span id="destination-selection-status" class="destination-selection-status" aria-live="polite"></span></label>
+              <div id="destination-results" class="destination-results" role="listbox" aria-label="Hasil pencarian lokasi" hidden></div>
             </div>
             <input type="hidden" id="destination-id" name="destinationId">
             <div class="destination-map-wrap">
-              <div class="destination-map-heading"><strong>Titik tujuan di peta</strong><small>Ketuk peta untuk memasang pin, lalu geser jika perlu.</small></div>
+              <div class="destination-map-heading"><strong>Titik tujuan di peta</strong><small>Pilih kecamatan dari saran, lalu pasang pin alamat di peta.</small></div>
               <div id="destination-map" role="application" aria-label="Peta untuk memilih titik alamat tujuan"></div>
               <p id="destination-coordinates" class="destination-coordinates">Pilih titik tujuan agar ongkir dapat dihitung.</p>
             </div>
