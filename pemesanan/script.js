@@ -226,8 +226,9 @@ function scheduleShippingQuote() {
       }
     } else {
       selectedDestination.distanceKm = null;
-      destinationCoordinates.textContent = `Pin: ${Number(selectedDestination.latitude).toFixed(6)}, ${Number(selectedDestination.longitude).toFixed(6)} · Jarak jalan belum dapat dihitung.`;
-      messages.push(routeResult.reason?.message || 'Jarak rute belum dapat dihitung.');
+      const routeError = routeResult.reason?.message || 'Jarak rute belum dapat dihitung.';
+      destinationCoordinates.textContent = `Pin: ${Number(selectedDestination.latitude).toFixed(6)}, ${Number(selectedDestination.longitude).toFixed(6)} · Rute jalan gagal: ${routeError}`;
+      messages.push(routeError);
     }
 
     if (cart.size === 0) {
