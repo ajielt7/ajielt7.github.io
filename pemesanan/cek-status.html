@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3ed">
+  <title>Cek Status Pesanan | Ruma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="status.css">
+</head>
+<body>
+  <header><a class="brand" href="index.html">ruma<span>.</span></a><a href="index.html">Kembali ke pemesanan</a></header>
+  <main>
+    <span class="eyebrow">INFORMASI PESANAN</span>
+    <h1>Cek status <em>pesanan.</em></h1>
+    <p class="intro">Masukkan kode pesanan untuk melihat perkembangannya.</p>
+    <form id="status-form">
+      <label>Kode pesanan<input name="paymentCode" required autocomplete="off" placeholder="Contoh: 26563 atau PNA-..."></label>
+      <button type="submit" id="lookup-button">Lihat status pesanan</button>
+      <p id="form-message" role="status" aria-live="polite"></p>
+    </form>
+    <section id="result" class="result" aria-live="polite" hidden></section>
+    <a class="new-order" href="index.html#pesan">Buat pesanan baru</a>
+  </main>
+  <script src="status.js"></script>
+</body>
+</html>
+
