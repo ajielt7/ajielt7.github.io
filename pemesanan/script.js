@@ -29,7 +29,7 @@
   }));
   const products = Object.fromEntries(productList.map((product) => [product.id, product]));
   const cart = new Map();
-  const API_BASE = 'https://pemesanan-api.ajielt7.workers.dev';
+  const API_BASE = 'https://pemesanan-api.netlify.app';
   let selectedDestination = null;
   let selectedArea = null;
   let selectedRate = null;

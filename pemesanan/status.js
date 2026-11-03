@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = 'https://pemesanan-api.ajielt7.workers.dev';
+  const API_BASE = 'https://pemesanan-api.netlify.app';
   const form = document.querySelector('#status-form');
   const button = document.querySelector('#lookup-button');
   const message = document.querySelector('#form-message');
